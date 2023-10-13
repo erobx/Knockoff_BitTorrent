@@ -1,0 +1,8 @@
+k preferred neighbors + 1 optimistically unchoked neighbor. These are all unchoked but can be choked except the 1 optimistically unchoked neighbor.
+
+Unchoking interval is p.
+OptimisticUnchokingInterval is m.
+
+Don't double book.
+
+A peer terminates when it finds out that all the peers, not just itself, have downloaded the complete file.
