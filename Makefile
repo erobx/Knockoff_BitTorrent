@@ -1,22 +1,22 @@
-SRC_DIR := src
+# SRC_DIR := src
 
-OUT_DIR := out
+# OUT_DIR := out
 
-SRCS := $(wildcard $(SRC_DIR)/*.java)
+# SRCS := $(wildcard $(SRC_DIR)/*.java)
 
-CLS := $(SRCS:$(SRC_DIR)/%.java=$(OUT_DIR)/%.class)
+# CLS := $(SRCS:$(SRC_DIR)/%.java=$(OUT_DIR)/%.class)
 
-JC := javac
-JCFLAGS := -d $(OUT_DIR)/ -cp $(SRC_DIR)/
+# JC := javac
+# JCFLAGS := -d $(OUT_DIR)/ -cp $(SRC_DIR)/
 
-.SUFFIXES: .java
+# .SUFFIXES: .java
 
-.PHONY: all clean
+# .PHONY: all clean
 
-all: $(CLS)
+# all: $(CLS)
 
-$(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
-	$(JC) $(JCFLAGS) $<
+# $(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
+# 	$(JC) $(JCFLAGS) $<
 
-clean:
-	rm $(OUT_DIR)/*.class
+# clean:
+# 	rm $(OUT_DIR)/*.class

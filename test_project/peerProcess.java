@@ -27,27 +27,22 @@ public class peerProcess {
 
     public static Vector<Boolean> bitfield = new Vector<>();
     static boolean hasFile = false;
-    static int port;
+    static int port;            // should pass this to client and server I'd assume
+    static boolean validPeerID = false;
 
-    public static Vector<String> peers = new Vector<>();
+    public Vector<PeerInfo> peers = new Vector<>();
 
     public peerProcess(String peerID) {
         this.peerID = peerID;
         getConfig();
         getPeers();
-        setBitfield();
-
-        // Only peer just listens
-        if (peers.isEmpty()) {
-            try {
-                listen();
-            } catch (Exception ex) {
-
-            }
-        }
+        // printPeers();
     }
 
-    // Reads Common.cfg
+    /*
+     * Reads Common.cfg
+     * Sets variables and calculcates pieces and last piece size
+     */
     private void getConfig() {
         try {
             String line;
@@ -85,7 +80,13 @@ public class peerProcess {
         numPieces = (int) Math.ceil((double)fileSize / pieceSize);
         lastPieceSize = fileSize - ((numPieces-1) * pieceSize);
     }
-    // Reads PeerInfo.cfg
+
+    /*
+     * Reads PeerInfo.cfg
+     * Loops through file until the process finds its ID
+     * Adds previous peers to list of peers to make TCP connections to
+     * Exits program if peerID given is not in PeerInfo.cfg
+     */
     private void getPeers() {
         try {
             String line;
@@ -93,21 +94,38 @@ public class peerProcess {
             while ((line = in.readLine()) != null) {
                 String[] tokens = line.split("\\s+");
                 String pID = tokens[0];
-                int temp_port = Integer.parseInt(tokens[2]);
-
-                PeerInfo pi = new PeerInfo(pID, tokens[1], temp_port);
+                String pAddress = tokens[1];
+                String temp_port = tokens[2];
 
                 // Right peer process
                 if (pID.equals(peerID)) {
                     port = Integer.parseInt(tokens[2]);
                     hasFile = tokens[3].equals("1");
+                    validPeerID = true;
+                    break;
                 }
-
-
+                peers.addElement(new PeerInfo(pID, pAddress, temp_port));
             }
             in.close();
+
+            if (!validPeerID) {
+                System.out.println("Invalid peer ID.");
+                System.exit(0);
+            }
+            setBitfield();
         } catch (Exception ex) {
             System.out.println(ex.toString());
+        }
+    }
+
+    // Print debugging for the win!
+    private void printPeers() {
+        if (!peers.isEmpty()) {
+            for (PeerInfo pi : peers) {
+                System.out.println(pi.pID);
+            }
+        } else {
+            System.out.println("First peer!");
         }
     }
 

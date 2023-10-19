@@ -3,11 +3,11 @@ package test_project;
 public class PeerInfo {
     String pID;
     String pAddress;
-    int port;
+    String pPort;
 
-    public PeerInfo(String pID, String pAddress, int port) {
+    public PeerInfo(String pID, String pAddress, String pPort) {
         this.pID = pID;
         this.pAddress = pAddress;
-        this.port = port;
+        this.pPort = pPort;
     }
 }

@@ -1,20 +1,26 @@
+PKG := test_project
+
+# OUT_DIR := out
+
+# SRCS := $(wildcard *.java)
+
+# CLS := $(SRCS:$(SRC_DIR)/%.java=$(OUT_DIR)/%.class)
+
 JC := javac
+# JCFLAGS := -d $(OUT_DIR)/ -cp $(DIR)/
 
-SRCS := $(wildcard *.java)
+all:
+	$(JC) PeerInfo.java peerProcess.java
 
-CLS := $(SRCS:%.java=%.class)
-
-all: $(CLS)
-
-$(CLS): %.class: %.java
-	$(JC) $<
+# $(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
+# 	$(JC) $(JCFLAGS) $<
 
 clean:
 	rm *.class
 
 run:
-	java peerProcess.java 1001
+	java -cp .. $(PKG).peerProcess 1001
 
-.PHONY: all clean
+# .PHONY: all clean
 
-.SUFFIXES: .java
+# .SUFFIXES: .java
