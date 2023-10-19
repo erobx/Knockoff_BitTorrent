@@ -10,7 +10,7 @@ JC := javac
 # JCFLAGS := -d $(OUT_DIR)/ -cp $(DIR)/
 
 all:
-	$(JC) PeerInfo.java peerProcess.java
+	$(JC) PeerInfo.java Server.java Client.java peerProcess.java
 
 # $(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
 # 	$(JC) $(JCFLAGS) $<

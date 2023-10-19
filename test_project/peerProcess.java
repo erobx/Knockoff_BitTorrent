@@ -1,6 +1,5 @@
 package test_project;
 import java.io.*;
-import java.net.*;
 import java.util.Vector;
 
 /*
@@ -36,6 +35,8 @@ public class peerProcess {
         this.peerID = peerID;
         getConfig();
         getPeers();
+        // startServer(port);
+        startBoth("localhost", port);
         // printPeers();
     }
 
@@ -141,53 +142,30 @@ public class peerProcess {
         }
     }
 
-    /*
-     * Server functionality of the peer
-     */
-    public void listen() throws Exception {
-        ServerSocket listener = new ServerSocket(port);
+    private void startServer(int port) {
+        Server server = new Server(port);
+        server.start();
+    }
+
+    private void startBoth(String serverAddress, int port) {
+        Server server = new Server(port);
+        server.start();
+        
+        Client client = new Client(serverAddress, port);
+        client.start();
+
         try {
-            while (true) {
-                new Handler(listener.accept()).start();
-                // Logging bs
-            }
-        } finally {
-            listener.close();
+            server.join();
+            client.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    private static class Handler extends Thread {
-        private Socket connection;
-        private ObjectInputStream in;
-        private ObjectOutputStream out;
-
-        public Handler(Socket connection) {
-            this.connection = connection;
-        }
-
-        public void run() {
-            try {
-                out = new ObjectOutputStream(connection.getOutputStream());
-                out.flush();
-                in = new ObjectInputStream(connection.getInputStream());
-                try {
-
-                } catch (Exception ex) {
-
-                }
-            } catch (Exception ex) {
-
-            } finally {
-
-            }
-        }
+    private void startClient(String serverAddress, int port) {
+        Client client = new Client(serverAddress, port);
+        client.start();
     }
-
-    /*
-     * Client functionality of the peer
-     */
-
-
 
     public static void main(String[] args) {
         peerProcess pp = new peerProcess(args[0]);
