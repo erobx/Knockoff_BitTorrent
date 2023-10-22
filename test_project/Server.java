@@ -2,7 +2,6 @@ package test_project;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class Server extends Thread {
     private final int port;
@@ -14,47 +13,70 @@ public class Server extends Thread {
     @Override
     public void run() {
         try {
-            ServerSocket serverSocket = new ServerSocket(port);
+            ServerSocket listener = new ServerSocket(port);
+            System.out.println("Server is running.");
             
             while (true) {
-                Socket clientSocket = serverSocket.accept();
-
-                new ServerThread(clientSocket).start();
+                Socket connection = listener.accept();
+                System.out.println("Connection established.");
+                new ClientHandler(connection).start();
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    private class ServerThread extends Thread {
-        private final Socket clientSocket;
+    private class ClientHandler extends Thread {
+        private final Socket connection;
+        String message;
+        String MESSAGE;
+        private ObjectInputStream in;
+        private ObjectOutputStream out;
 
-        public ServerThread(Socket clientSocket) {
-            this.clientSocket = clientSocket;
+        public ClientHandler(Socket connection) {
+            this.connection = connection;
         }
 
         @Override
         public void run() {
             try {
-                InputStream inputStream = clientSocket.getInputStream();
-                OutputStream outputStream = clientSocket.getOutputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                PrintWriter writer = new PrintWriter(outputStream, true);
-
-                while (true) {
-                    String message = reader.readLine();
-                    if (message == null) {
-                        break;
+                in = new ObjectInputStream(connection.getInputStream());
+                out = new ObjectOutputStream(connection.getOutputStream());
+                out.flush();
+                
+                try {
+                    while (true) {
+                        message = (String)in.readObject();
+                        if (message.equals("end"))
+                            break;
+                        System.out.println("Received message: " + message + " from client.");
+                        MESSAGE = message.toUpperCase();
+                        sendMessage(MESSAGE);
                     }
-                    System.out.println("Client: " + message);
-
-                    System.out.println("Server: ");
-                    String response = new Scanner(System.in).nextLine();
-                    writer.println(response);
+                } catch (ClassNotFoundException classNot) {
+                    System.err.println("Data received in unknown format.");
                 }
-                clientSocket.close();
             } catch(IOException ex) {
                 ex.printStackTrace();
+            } finally {
+                try {
+                    in.close();
+                    out.close();
+                    connection.close();
+                    System.out.println("\nGoodbye!");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        public void sendMessage(String msg) {
+            try {
+                out.writeObject(msg);
+                out.flush();
+                System.out.println("Send message: " + msg + " to client.");
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
             }
         }
     }

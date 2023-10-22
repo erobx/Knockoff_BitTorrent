@@ -35,8 +35,8 @@ public class peerProcess {
         this.peerID = peerID;
         getConfig();
         getPeers();
-        // startServer(port);
-        startBoth("localhost", port);
+        startBoth("localhost", port, 1);
+        startClient("localhost", port, 2);
         // printPeers();
     }
 
@@ -147,24 +147,19 @@ public class peerProcess {
         server.start();
     }
 
-    private void startBoth(String serverAddress, int port) {
-        Server server = new Server(port);
-        server.start();
-        
-        Client client = new Client(serverAddress, port);
+    private void startClient(String serverAddress, int port, int no) {
+        Client client = new Client(serverAddress, port, no);
         client.start();
-
         try {
-            server.join();
             client.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
         }
     }
 
-    private void startClient(String serverAddress, int port) {
-        Client client = new Client(serverAddress, port);
-        client.start();
+    private void startBoth(String serverAddress, int port, int no) {
+        startServer(port);
+        startClient(serverAddress, port, no);
     }
 
     public static void main(String[] args) {

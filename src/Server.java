@@ -2,10 +2,10 @@ import java.net.*;
 import java.io.*;
 
 public class Server {
-    private static final int port = 8080;
-
+    private static final int port = 8001;
+    
     public static void main(String[] args) throws Exception {
-        System.out.println("The server is running.");
+        System.out.println("The server is running on port: " + port);
         ServerSocket listener = new ServerSocket(port);
         int clientNum = 1;
         try {

@@ -1,47 +1,68 @@
 package test_project;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class Client extends Thread {
     private final String serverAddress;
     private final int port;
+    private int no;
 
-    public Client(String serverAddress, int port) {
+    Socket socket;
+    ObjectOutputStream out;
+    ObjectInputStream in;
+
+    public Client(String serverAddress, int port, int no) {
         this.serverAddress = serverAddress;
         this.port = port;
+        this.no = no;
     }
 
     @Override
     public void run() {
         try {
-            Socket socket = new Socket(serverAddress, port);
+            socket = new Socket(serverAddress, port);
+            System.out.println("Connected to server on port " + port + ". Client " + no + ".");
 
-            InputStream inputStream = socket.getInputStream();
-            OutputStream outputStream = socket.getOutputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            PrintWriter writer = new PrintWriter(outputStream, true);
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(socket.getInputStream());
 
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
-                System.out.println("Client: ");
-                String message = new Scanner(System.in).nextLine();
-                writer.print(message);
-
-                String response = reader.readLine();
-                if (response == null) {
-                    break;
+                System.out.println("Input a sentence: ");
+                String message = reader.readLine();
+                sendMessage(message);
+                try {
+                    String response = (String)in.readObject();
+                    System.out.println("Received message: " + response);
+                } catch (ClassNotFoundException classNot) {
+                    System.err.println("No data received.");
                 }
-                System.out.println("Server: " + response);
             }
+        } catch (IOException ex) {
+            System.err.println("\nConnection terminated.");
+        } finally {
+            try {
+                in.close();
+                out.close();
+                socket.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
 
-            socket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    void sendMessage(String msg) {
+        try {
+            out.writeObject(msg);
+            out.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }
