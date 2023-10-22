@@ -1,7 +1,7 @@
 package test_project;
+
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 public class Server extends Thread {
     private final int port;
