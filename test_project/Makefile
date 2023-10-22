@@ -19,7 +19,7 @@ clean:
 	rm *.class
 
 run:
-	java -cp .. $(PKG).peerProcess 1002
+	java -cp .. $(PKG).peerProcess 1003
 
 # .PHONY: all clean
 
