@@ -1,51 +1,61 @@
 package test_project;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
+
+import test_project.Handshake.Result;
 
 public class Client extends Thread {
     private final String serverAddress;
     private final int port;
-    private int no;
+    private int id;
 
     Socket socket;
     ObjectOutputStream out;
     ObjectInputStream in;
 
-    public Client(String serverAddress, int port, int no) {
+    public Client(String serverAddress, int port, int id) {
         this.serverAddress = serverAddress;
         this.port = port;
-        this.no = no;
+        this.id = id;
     }
 
     @Override
     public void run() {
         try {
             socket = new Socket(serverAddress, port);
-            System.out.println("Connected to server on port " + port + ". Client " + no + ".");
+            System.out.println("Client " + id + " connected to server on port " + port + ". ");
 
             out = new ObjectOutputStream(socket.getOutputStream());
             out.flush();
             in = new ObjectInputStream(socket.getInputStream());
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            while (true) {
-                System.out.println("Input a sentence: ");
-                String message = reader.readLine();
-                sendMessage(message);
-                try {
-                    String response = (String)in.readObject();
-                    System.out.println("Received message: " + response);
-                } catch (ClassNotFoundException classNot) {
-                    System.err.println("No data received.");
-                }
+            sendHandshake();
+            Result result = receiveHandshake();
+            if (result.valid) {
+                System.out.println("Peer " + result.peerID + ": handshake accepted.");
             }
+
+            // Main logic here
+            while (true) {
+                break;
+            }
+
+            // BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            // while (true) {
+            //     System.out.println("Input a sentence: ");
+            //     String message = reader.readLine();
+            //     sendMessage(message);
+            //     sendHandshake();
+            //     try {
+            //         String response = (String)in.readObject();
+            //         System.out.println("Received message: " + response);
+            //     } catch (ClassNotFoundException classNot) {
+            //         System.err.println("No data received.");
+            //     }
+            // }
         } catch (IOException ex) {
-            System.err.println("\nConnection terminated.");
+            System.err.println("Connection terminated.");
         } finally {
             try {
                 in.close();
@@ -57,12 +67,30 @@ public class Client extends Thread {
         }
     }
 
-    void sendMessage(String msg) {
+    void sendHandshake() {
+        Handshake handshake = new Handshake(id);
         try {
-            out.writeObject(msg);
+            out.writeObject(handshake);
             out.flush();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    Result receiveHandshake() {
+        try {
+            Handshake handshake = (Handshake)in.readObject();
+            String header = handshake.getHeader();
+            int peerID = handshake.getID();
+            if (header.equals("P2PFILESHARINGPROJ")) {
+                Result result = handshake.new Result(true, peerID);
+                return result;
+            }
+        } catch (ClassNotFoundException classNot) {
+            System.err.println("Data received in unknown format.");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 }

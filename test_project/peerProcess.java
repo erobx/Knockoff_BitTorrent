@@ -35,14 +35,14 @@ public class peerProcess {
         this.peerID = peerID;
         getConfig();
         getPeers();
-        startBoth("localhost", port, 1);
-        startClient("localhost", port, 2);
+        startBoth("localhost", port, Integer.parseInt(peerID));
+        // startClient("localhost", port, Integer.parseInt(peerID));
         // printPeers();
     }
 
     /*
      * Reads Common.cfg
-     * Sets variables and calculcates pieces and last piece size
+     * Sets variables and calculates pieces and last piece size
      */
     private void getConfig() {
         try {
@@ -147,8 +147,8 @@ public class peerProcess {
         server.start();
     }
 
-    private void startClient(String serverAddress, int port, int no) {
-        Client client = new Client(serverAddress, port, no);
+    private void startClient(String serverAddress, int port, int id) {
+        Client client = new Client(serverAddress, port, id);
         client.start();
         try {
             client.join();
@@ -157,9 +157,9 @@ public class peerProcess {
         }
     }
 
-    private void startBoth(String serverAddress, int port, int no) {
+    private void startBoth(String serverAddress, int port, int id) {
         startServer(port);
-        startClient(serverAddress, port, no);
+        startClient(serverAddress, port, id);
     }
 
     public static void main(String[] args) {
