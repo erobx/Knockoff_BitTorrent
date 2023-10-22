@@ -37,7 +37,6 @@ public class peerProcess {
         this.peerID = peerID;
         getConfig();
         getPeers();
-        System.out.println(maxPeers);
 
         if (peers.isEmpty()) {
             startServer(port);
