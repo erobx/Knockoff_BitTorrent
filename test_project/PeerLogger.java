@@ -121,6 +121,6 @@ public class PeerLogger {
 
     public static void CompletionOfDownloadMessage(String pid1){
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s rhas downloaded the complete file.", pid1));
+        logger.log(Level.INFO, String.format("Peer %s has downloaded the complete file.", pid1));
     }
 }
