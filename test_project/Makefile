@@ -2,7 +2,9 @@ PKG := test_project
 
 # OUT_DIR := out
 
-# SRCS := $(wildcard *.java)
+SRCS := $(wildcard *.java)
+
+PEER := 1003
 
 # CLS := $(SRCS:$(SRC_DIR)/%.java=$(OUT_DIR)/%.class)
 
@@ -10,7 +12,7 @@ JC := javac
 # JCFLAGS := -d $(OUT_DIR)/ -cp $(DIR)/
 
 all:
-	$(JC) PeerInfo.java Handshake.java Server.java Client.java peerProcess.java
+	$(JC) $(SRCS)
 
 # $(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
 # 	$(JC) $(JCFLAGS) $<
@@ -19,7 +21,7 @@ clean:
 	rm *.class
 
 run:
-	java -cp .. $(PKG).peerProcess 1003
+	java -cp .. $(PKG).peerProcess $(PEER)
 
 # .PHONY: all clean
 
