@@ -10,7 +10,7 @@ JC := javac
 # JCFLAGS := -d $(OUT_DIR)/ -cp $(DIR)/
 
 all:
-	$(JC) PeerInfo.java Server.java Client.java peerProcess.java
+	$(JC) PeerInfo.java Handshake.java Server.java Client.java peerProcess.java
 
 # $(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
 # 	$(JC) $(JCFLAGS) $<
@@ -19,7 +19,7 @@ clean:
 	rm *.class
 
 run:
-	java -cp .. $(PKG).peerProcess 1001
+	java -cp .. $(PKG).peerProcess 1003
 
 # .PHONY: all clean
 

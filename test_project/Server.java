@@ -3,6 +3,8 @@ package test_project;
 import java.io.*;
 import java.net.*;
 
+import test_project.Handshake.Result;
+
 public class Server extends Thread {
     private final int port;
 
@@ -14,11 +16,10 @@ public class Server extends Thread {
     public void run() {
         try {
             ServerSocket listener = new ServerSocket(port);
-            System.out.println("Server is running.");
+            System.out.println("\nServer is running.\n");
             
             while (true) {
                 Socket connection = listener.accept();
-                System.out.println("Connection established.");
                 new ClientHandler(connection).start();
             }
         } catch (IOException ex) {
@@ -28,8 +29,6 @@ public class Server extends Thread {
 
     private class ClientHandler extends Thread {
         private final Socket connection;
-        String message;
-        String MESSAGE;
         private ObjectInputStream in;
         private ObjectOutputStream out;
 
@@ -43,18 +42,16 @@ public class Server extends Thread {
                 in = new ObjectInputStream(connection.getInputStream());
                 out = new ObjectOutputStream(connection.getOutputStream());
                 out.flush();
-                
-                try {
-                    while (true) {
-                        message = (String)in.readObject();
-                        if (message.equals("end"))
-                            break;
-                        System.out.println("Received message: " + message + " from client.");
-                        MESSAGE = message.toUpperCase();
-                        sendMessage(MESSAGE);
-                    }
-                } catch (ClassNotFoundException classNot) {
-                    System.err.println("Data received in unknown format.");
+
+                Result result = receiveHandshake();
+                if (result.valid) {
+                    System.out.println("Peer " + result.peerID + ": handshake accepted.");
+                    sendHandshake(result.peerID);
+                }
+
+                // Main logic here
+                while (true) {
+                    break;
                 }
             } catch(IOException ex) {
                 ex.printStackTrace();
@@ -63,21 +60,38 @@ public class Server extends Thread {
                     in.close();
                     out.close();
                     connection.close();
-                    System.out.println("\nGoodbye!");
+                    System.out.println("Client disconnect. Goodbye!\n");
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
             }
         }
 
-        public void sendMessage(String msg) {
+        void sendHandshake(int pid) {
+            Handshake handshake = new Handshake(pid);
             try {
-                out.writeObject(msg);
+                out.writeObject(handshake);
                 out.flush();
-                System.out.println("Send message: " + msg + " to client.");
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
+        }
+
+        Result receiveHandshake() {
+            try {
+                Handshake handshake = (Handshake)in.readObject();
+                String header = handshake.getHeader();
+                int peerID = handshake.getID();
+                if (header.equals("P2PFILESHARINGPROJ")) {
+                    Result result = handshake.new Result(true, peerID);
+                    return result;
+                }
+            } catch (ClassNotFoundException classNot) {
+                System.err.println("Data received in unknown format.");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            return null;
         }
     }
 }

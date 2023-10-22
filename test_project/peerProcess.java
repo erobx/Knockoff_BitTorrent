@@ -24,25 +24,33 @@ public class peerProcess {
     static int numPieces;
     static int lastPieceSize;   // byte size of last piece since not always equal to pieceSize
 
-    public static Vector<Boolean> bitfield = new Vector<>();
-    static boolean hasFile = false;
     static int port;            // should pass this to client and server I'd assume
+    static boolean hasFile = false;
     static boolean validPeerID = false;
-
+    
+    public Vector<Boolean> bitfield = new Vector<>();
     public Vector<PeerInfo> peers = new Vector<>();
+
+    static int maxPeers;
 
     public peerProcess(String peerID) {
         this.peerID = peerID;
         getConfig();
         getPeers();
-        startBoth("localhost", port, 1);
-        startClient("localhost", port, 2);
-        // printPeers();
+        System.out.println(maxPeers);
+
+        if (peers.isEmpty()) {
+            startServer(port);
+        } else if (peers.size() == maxPeers-1) {
+            startClients();
+        } else {
+            startBoth(port);
+        }
     }
 
     /*
      * Reads Common.cfg
-     * Sets variables and calculcates pieces and last piece size
+     * Sets variables and calculates pieces and last piece size
      */
     private void getConfig() {
         try {
@@ -92,6 +100,11 @@ public class peerProcess {
         try {
             String line;
             BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
+            maxPeers = (int)in.lines().count();
+            in.close();
+
+            in = new BufferedReader(new FileReader("PeerInfo.cfg"));
+            
             while ((line = in.readLine()) != null) {
                 String[] tokens = line.split("\\s+");
                 String pID = tokens[0];
@@ -105,7 +118,7 @@ public class peerProcess {
                     validPeerID = true;
                     break;
                 }
-                peers.addElement(new PeerInfo(pID, pAddress, temp_port));
+                peers.addElement(new PeerInfo(pID, pAddress, temp_port)); 
             }
             in.close();
 
@@ -113,6 +126,7 @@ public class peerProcess {
                 System.out.println("Invalid peer ID.");
                 System.exit(0);
             }
+
             setBitfield();
         } catch (Exception ex) {
             System.out.println(ex.toString());
@@ -147,8 +161,8 @@ public class peerProcess {
         server.start();
     }
 
-    private void startClient(String serverAddress, int port, int no) {
-        Client client = new Client(serverAddress, port, no);
+    private void startClient(String serverAddress, int port, int id) {
+        Client client = new Client(serverAddress, port, id);
         client.start();
         try {
             client.join();
@@ -157,9 +171,15 @@ public class peerProcess {
         }
     }
 
-    private void startBoth(String serverAddress, int port, int no) {
+    private void startClients() {
+        for (PeerInfo pi : peers) {
+            startClient(pi.pAddress, Integer.parseInt(pi.pPort), Integer.parseInt(pi.pID));
+        }
+    }
+
+    private void startBoth(int port) {
         startServer(port);
-        startClient(serverAddress, port, no);
+        startClients();
     }
 
     public static void main(String[] args) {
