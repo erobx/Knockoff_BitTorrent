@@ -40,20 +40,6 @@ public class Client extends Thread {
             while (true) {
                 break;
             }
-
-            // BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            // while (true) {
-            //     System.out.println("Input a sentence: ");
-            //     String message = reader.readLine();
-            //     sendMessage(message);
-            //     sendHandshake();
-            //     try {
-            //         String response = (String)in.readObject();
-            //         System.out.println("Received message: " + response);
-            //     } catch (ClassNotFoundException classNot) {
-            //         System.err.println("No data received.");
-            //     }
-            // }
         } catch (IOException ex) {
             System.err.println("Connection terminated.");
         } finally {

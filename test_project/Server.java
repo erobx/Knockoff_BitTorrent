@@ -47,7 +47,7 @@ public class Server extends Thread {
                 Result result = receiveHandshake();
                 if (result.valid) {
                     System.out.println("Peer " + result.peerID + ": handshake accepted.");
-                    sendHandshake();
+                    sendHandshake(result.peerID);
                 }
 
                 // Main logic here
@@ -68,8 +68,8 @@ public class Server extends Thread {
             }
         }
 
-        void sendHandshake() {
-            Handshake handshake = new Handshake(1001);
+        void sendHandshake(int pid) {
+            Handshake handshake = new Handshake(pid);
             try {
                 out.writeObject(handshake);
                 out.flush();
