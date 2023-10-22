@@ -1,8 +1,7 @@
 package test_project;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 import test_project.Handshake.Result;
 
