@@ -31,6 +31,9 @@ public class Client extends Thread {
             in = socket.getInputStream();
 
             handshake();
+            // Bitfield msg is only sent as the first msg right after handshaking is done when a
+            // connection is established.
+            sendMessage((byte) 5);
 
             for (int i = 0; i < 8; i++) {
                 sendMessage((byte)i);
@@ -89,39 +92,32 @@ public class Client extends Thread {
 
     void sendMessage(byte type) {
         try {
-            Message msg;
+            Message msg = new Message();
             int length = 1;                 // always have 1 byte for type
-            byte[] payload;
-            int index;
+            byte[] payload = null;
+            int index = 0;
 
             switch (type) {
                 // Choke - no payload
                 case 0:
-                    msg = new Message(length, type);
-                    msg.serialize(out);
+                    handleEmptyPayloadMsg(out, msg, length, type);
                     break;
                 // Unchoke - no payload
                 case 1:
-                    msg = new Message(length, type);
-                    msg.serialize(out);
+                    handleEmptyPayloadMsg(out, msg, length, type);
                     break;
                 // Interested - no payload
                 case 2:
-                    msg = new Message(length, type);
-                    msg.serialize(out);
+                    handleEmptyPayloadMsg(out, msg, length, type);
                     break;
                 // Not interested - no payload
                 case 3:
-                    msg = new Message(length, type);
-                    msg.serialize(out);
+                    handleEmptyPayloadMsg(out, msg, length, type);
                     break;
                 // Have - index payload
                 case 4:
-                    index = 42;
-                    payload = Message.intToByteArray(index);
-                    length += payload.length;
-                    msg = new Message(length, type, payload);
-                    msg.serialize(out);
+                    index = 42;                             // need actual index
+                    handleIndexMsg(out, msg, length, type, index, payload);
                     break;
                 // Bitfield - bitfield payload
                 case 5:
@@ -129,14 +125,12 @@ public class Client extends Thread {
                     length += payload.length;
                     msg = new Message(length, type, payload);
                     msg.serialize(out);
+                    // handleBitfieldMsg();
                     break;
                 // Request - index payload
                 case 6:
-                    index = 69;
-                    payload = Message.intToByteArray(index);
-                    length += payload.length;
-                    msg = new Message(length, type, payload);
-                    msg.serialize(out);
+                    index = 69;                             // need actual index
+                    handleIndexMsg(out, msg, length, type, index, payload);
                     break;
                 // Piece - index + piece payload
                 case 7:
@@ -144,8 +138,7 @@ public class Client extends Thread {
                     length += payload.length;
                     msg = new Message(length, type, payload);
                     msg.serialize(out);
-                    break;
-                default:
+                    // handlePieceMsg()
                     break;
             }
         } catch (IOException ex) {
@@ -153,8 +146,19 @@ public class Client extends Thread {
         }
     }
 
-    // private void sendNoPayload(Message msg, int length, byte type, OutputStream out) throws IOException {
-    //     msg = new Message(length, type);
-    //     msg.serialize(out);
-    // }
+    private void handleEmptyPayloadMsg(OutputStream out, Message msg, int length, byte type) throws IOException {
+        msg = new Message(length, type);
+        msg.serialize(out);
+    }
+
+    private void handleIndexMsg(OutputStream out, Message msg, int length, byte type, int index, byte[] payload) throws IOException {
+        payload = Message.intToByteArray(index);
+        length += payload.length;
+        msg = new Message(length, type, payload);
+        msg.serialize(out);
+    }
+
+    private void handleBitfieldMsg() {}
+
+    private void handlePieceMsg() {}
 }
