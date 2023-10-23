@@ -65,9 +65,14 @@ public class PeerLogger {
         }
     }
 
-    public static void TCPMessage(String pid1, String pid2){
+    public static void TCPSendMessage(String pid1, String pid2){
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
         logger.log(Level.INFO, String.format("Peer %s makes a connection to Peer %s", pid1, pid2));
+    }
+
+    public static void TCPReceiveMessage(String pid1, String pid2){
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
+        logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pid1, pid2));
     }
 
     public static void PrefNeighborMessage(String pid1, Vector<PeerInfo> preferredNeighbors){
