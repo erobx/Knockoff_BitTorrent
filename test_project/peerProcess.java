@@ -181,7 +181,7 @@ public class peerProcess {
         startClients();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         peerProcess pp = new peerProcess(args[0]);
     }
 }
