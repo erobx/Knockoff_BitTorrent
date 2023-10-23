@@ -16,7 +16,7 @@ public class Server extends Thread {
     public void run() {
         try {
             ServerSocket listener = new ServerSocket(port);
-            System.out.println("\nServer is running.\n");
+            System.out.println("\nServer is running.");
             
             while (true) {
                 Socket connection = listener.accept();
@@ -29,8 +29,9 @@ public class Server extends Thread {
 
     private class ClientHandler extends Thread {
         private final Socket connection;
-        private ObjectInputStream in;
-        private ObjectOutputStream out;
+
+        private InputStream in;
+        private OutputStream out;
 
         public ClientHandler(Socket connection) {
             this.connection = connection;
@@ -39,14 +40,14 @@ public class Server extends Thread {
         @Override
         public void run() {
             try {
-                in = new ObjectInputStream(connection.getInputStream());
-                out = new ObjectOutputStream(connection.getOutputStream());
+                in = connection.getInputStream();
+                out = connection.getOutputStream();
                 out.flush();
 
-                Result result = receiveHandshake();
-                if (result.valid) {
-                    System.out.println("Peer " + result.peerID + ": handshake accepted.");
-                    sendHandshake(result.peerID);
+                handshake();
+
+                for (int i = 0; i < 8; i++) {
+                    getMessage();
                 }
 
                 // Main logic here
@@ -67,31 +68,88 @@ public class Server extends Thread {
             }
         }
 
+        void handshake() {
+            Result result = receiveHandshake();
+            if (result.valid) {
+                System.out.println("Peer " + result.peerID + ": handshake accepted.");
+                sendHandshake(result.peerID);
+            }
+        }
+
         void sendHandshake(int pid) {
-            Handshake handshake = new Handshake(pid);
             try {
-                out.writeObject(handshake);
-                out.flush();
+                Handshake msg = new Handshake("P2PFILESHARINGPROJ", pid);
+                msg.serialize(out);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
-
+    
         Result receiveHandshake() {
             try {
-                Handshake handshake = (Handshake)in.readObject();
-                String header = handshake.getHeader();
-                int peerID = handshake.getID();
+                Handshake msg = Handshake.deserialize(in);
+                String header = msg.getHeader();
+                int peerID = msg.getID();
+                
                 if (header.equals("P2PFILESHARINGPROJ")) {
-                    Result result = handshake.new Result(true, peerID);
+                    Result result = msg.new Result(true, peerID);
                     return result;
                 }
-            } catch (ClassNotFoundException classNot) {
-                System.err.println("Data received in unknown format.");
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
             return null;
+        }
+
+        void getMessage() {
+            try {
+                Message msg = Message.deserialize(in);
+                int type = msg.getType();
+                int index;
+
+                switch (type) {
+                    // Choke - no payload
+                    case 0:
+                        System.out.println("Choke me daddy.");
+                        break;
+                    // Unchoke - no payload
+                    case 1:
+                        System.out.println("Unchoke me daddy uWu.");
+                        break;
+                    // Interested - no payload
+                    case 2:
+                        System.out.println("Omg you're so tallllll!");
+                        break;
+                    // Not interested - no payload
+                    case 3:
+                        System.out.println("Sorry I have a boyfriend.");
+                        break;
+                    // Have - index payload
+                    case 4:
+                        index = msg.getIndex();
+                        System.out.println("I have piece at index: " + index);
+                        break;
+                    // Bitfield - bitfield payload
+                    case 5:
+                        System.out.println("Send me your bitfield bitch.");
+                        break;
+                    // Request - index payload
+                    case 6:
+                        index = msg.getIndex();
+                        System.out.println("Requested index: " + index);
+                        // get piece
+                        break;
+                    // Piece - index + piece payload
+                    case 7:
+                        System.out.println("Give me a piece of dat ass.");
+                        break;
+                    default:
+                        break;
+                }
+            } catch (IOException ex) {
+                System.out.println("Failed to deserialize.");
+                ex.printStackTrace();
+            }
         }
     }
 }

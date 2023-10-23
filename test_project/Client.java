@@ -11,8 +11,8 @@ public class Client extends Thread {
     private int id;
 
     Socket socket;
-    ObjectOutputStream out;
-    ObjectInputStream in;
+    OutputStream out;
+    InputStream in;
 
     public Client(String serverAddress, int port, int id) {
         this.serverAddress = serverAddress;
@@ -26,18 +26,19 @@ public class Client extends Thread {
             socket = new Socket(serverAddress, port);
             System.out.println("Client " + id + " connected to server on port " + port + ". ");
 
-            out = new ObjectOutputStream(socket.getOutputStream());
+            out = socket.getOutputStream();
             out.flush();
-            in = new ObjectInputStream(socket.getInputStream());
+            in = socket.getInputStream();
 
-            sendHandshake();
-            Result result = receiveHandshake();
-            if (result.valid) {
-                System.out.println("Peer " + result.peerID + ": handshake accepted.");
+            handshake();
+
+            for (int i = 0; i < 8; i++) {
+                sendMessage((byte)i);
             }
 
             // Main logic here
             while (true) {
+                
                 break;
             }
         } catch (IOException ex) {
@@ -53,11 +54,18 @@ public class Client extends Thread {
         }
     }
 
+    void handshake() {
+        sendHandshake();
+        Result result = receiveHandshake();
+        if (result.valid) {
+            System.out.println("Peer " + result.peerID + ": handshake accepted.");
+        }
+    }
+
     void sendHandshake() {
-        Handshake handshake = new Handshake(id);
         try {
-            out.writeObject(handshake);
-            out.flush();
+            Handshake msg = new Handshake("P2PFILESHARINGPROJ", id);
+            msg.serialize(out);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -65,18 +73,88 @@ public class Client extends Thread {
 
     Result receiveHandshake() {
         try {
-            Handshake handshake = (Handshake)in.readObject();
-            String header = handshake.getHeader();
-            int peerID = handshake.getID();
+            Handshake msg = Handshake.deserialize(in);
+            String header = msg.getHeader();
+            int peerID = msg.getID();
+
             if (header.equals("P2PFILESHARINGPROJ")) {
-                Result result = handshake.new Result(true, peerID);
+                Result result = msg.new Result(true, peerID);
                 return result;
             }
-        } catch (ClassNotFoundException classNot) {
-            System.err.println("Data received in unknown format.");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
         return null;
     }
+
+    void sendMessage(byte type) {
+        try {
+            Message msg;
+            int length = 1;                 // always have 1 byte for type
+            byte[] payload;
+            int index;
+
+            switch (type) {
+                // Choke - no payload
+                case 0:
+                    msg = new Message(length, type);
+                    msg.serialize(out);
+                    break;
+                // Unchoke - no payload
+                case 1:
+                    msg = new Message(length, type);
+                    msg.serialize(out);
+                    break;
+                // Interested - no payload
+                case 2:
+                    msg = new Message(length, type);
+                    msg.serialize(out);
+                    break;
+                // Not interested - no payload
+                case 3:
+                    msg = new Message(length, type);
+                    msg.serialize(out);
+                    break;
+                // Have - index payload
+                case 4:
+                    index = 42;
+                    payload = Message.intToByteArray(index);
+                    length += payload.length;
+                    msg = new Message(length, type, payload);
+                    msg.serialize(out);
+                    break;
+                // Bitfield - bitfield payload
+                case 5:
+                    payload = new byte[100];                // number pieces ? placeholder
+                    length += payload.length;
+                    msg = new Message(length, type, payload);
+                    msg.serialize(out);
+                    break;
+                // Request - index payload
+                case 6:
+                    index = 69;
+                    payload = Message.intToByteArray(index);
+                    length += payload.length;
+                    msg = new Message(length, type, payload);
+                    msg.serialize(out);
+                    break;
+                // Piece - index + piece payload
+                case 7:
+                    payload = new byte[4 + 30000];          // placeholder
+                    length += payload.length;
+                    msg = new Message(length, type, payload);
+                    msg.serialize(out);
+                    break;
+                default:
+                    break;
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // private void sendNoPayload(Message msg, int length, byte type, OutputStream out) throws IOException {
+    //     msg = new Message(length, type);
+    //     msg.serialize(out);
+    // }
 }
