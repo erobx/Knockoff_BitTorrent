@@ -14,8 +14,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
-import peerProcess;
-
 public class StartRemotePeers {
 
     private static final String scriptPrefix = "java test_project/peerProcess ";
@@ -52,15 +50,15 @@ public class StartRemotePeers {
         }
 
         public String getPort() {
-            return hostName;
+            return port;
         }
 
         public void setPort(String port) {
             this.port = port;
         }
 
-        public String getHasFile() {
-            return hostName;
+        public boolean getHasFile() {
+            return hasFile;
         }
 
         public void setHasFile(boolean hasFile) {
@@ -126,7 +124,7 @@ public class StartRemotePeers {
 
                             while ((line = bufferedReader.readLine()) != null) {
                                 // start peer process TODO
-                                peerProcess peer = new peerProcess(remotePeer.getPeerID());
+                                // peerProcess peer = new peerProcess(remotePeer.getPeerID());
                                 System.out.println(remotePeer.getPeerID() + ">:" + line);
 
                             }
@@ -169,7 +167,7 @@ public class StartRemotePeers {
                 String peerId = tokens[0];
                 String hostName = tokens[1];
                 String port = tokens[2];
-                boolean hasFile = tokens[3] == "1" ? true : false;
+                boolean hasFile = tokens[3].equals("1") ? true : false;
 
                 peerList.add(new PeerInfo(peerId, hostName, port, hasFile));
             }
