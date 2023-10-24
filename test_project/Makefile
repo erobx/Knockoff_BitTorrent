@@ -4,7 +4,7 @@ PKG := test_project
 
 SRCS := $(wildcard *.java)
 
-PEER := 1003
+PEER := 1002
 
 # CLS := $(SRCS:$(SRC_DIR)/%.java=$(OUT_DIR)/%.class)
 
