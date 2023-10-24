@@ -7,6 +7,9 @@ import java.io.*;
 import util.Bitfield;
 import util.ClientHandler;
 import util.Server;
+import messages.Handshake;
+import messages.Handshake.Result;
+import java.util.HashMap;
 
 public class Peer {
     // Variables from config
@@ -25,6 +28,7 @@ public class Peer {
     public static Bitfield bitfield;
     public static int unfinishedPeers;
     private Vector<Neighbor> peers = new Vector<>();
+    private HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
     private int[] prefPeers;
     private int optUnchokedPeer;
@@ -50,7 +54,7 @@ public class Peer {
 
         // Create server 
         server = new Server(port);
-        server.setDaemon(true);
+        //server.setDaemon(true);
         server.start();
 
         // Establish TCP connections with all peers before
@@ -58,7 +62,7 @@ public class Peer {
 
         // Main loop
         while (unfinishedPeers != 0) {
-            break;
+            
         }
 
         System.out.println("End of simulation.");
@@ -173,7 +177,8 @@ public class Peer {
                 
                 // Send handshake
                 try {
-                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    //PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
                     
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -182,7 +187,9 @@ public class Peer {
                 // Handle clients
                 ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID);
                 // Add ch to list of clientsockets?
-                ch.setDaemon(true);
+                clients.put(neighbor.peerID, ch);
+
+                //ch.setDaemon(true); 
                 ch.start();
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
@@ -191,4 +198,6 @@ public class Peer {
             }
         }
     }
+
+    
 }

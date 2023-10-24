@@ -3,6 +3,7 @@ package util;
 import java.io.*;
 import java.net.*;
 import messages.Message;
+import messages.Handshake;
 
 public class Server extends Thread {
     private final int port;
@@ -16,18 +17,16 @@ public class Server extends Thread {
     public void run() {
         try {
             listener = new ServerSocket(port);
+            System.out.println("[Server] Waiting for connection on port " + port);
             while (true) {
                 Socket clientSocket = listener.accept();
 
                 // Wait for handshake
                 int senderID = -1;
                 try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(
-                        clientSocket.getInputStream()));
-                    String msgString = in.readLine();
-                    // Decode message
-                    Message msg = Message.decodeMessage();
-                    senderID = msg.senderID;
+                    //BufferedReader in = new BufferedReader(new InputStreamReader(
+                    //    clientSocket.getInputStream()));
+                    senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -35,10 +34,10 @@ public class Server extends Thread {
                 // Create new ClientHandler
                 ClientHandler ch = new ClientHandler(clientSocket, senderID);
                 // Add ch to list of clientsockets?
-                ch.setDaemon(true);
-                ch.start();
 
-                // Send bitfield msg
+                //ch.setDaemon(true);
+                ch.start();
+                
             }
         } catch (IOException ex) {
             ex.printStackTrace();
