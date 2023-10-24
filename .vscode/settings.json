@@ -1,0 +1,7 @@
+{
+  "java.project.referencedLibraries": [
+    "lib/**/*.jar",
+    "refLib/jsch-0.1.55.jar"
+  ],
+  "java.project.explorer.showNonJavaResources": true
+}
