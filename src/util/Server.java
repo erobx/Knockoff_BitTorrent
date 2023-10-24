@@ -35,7 +35,7 @@ public class Server extends Thread {
                 ClientHandler ch = new ClientHandler(clientSocket, senderID);
                 // Add ch to list of clientsockets?
 
-                //ch.setDaemon(true);
+                ch.setDaemon(true);
                 ch.start();
                 
             }

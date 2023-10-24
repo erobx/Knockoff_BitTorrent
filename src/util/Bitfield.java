@@ -13,8 +13,7 @@ public class Bitfield {
         int tempLength = numPieces / 8;
 		int length = (tempLength * 8 == numPieces) ? tempLength : (tempLength + 1);
 		bitfield = new byte[length];
-		byte fillValueByte = hasFile ? (byte) (0b11111111)
-				: (byte) (0b00000000);
+		byte fillValueByte = hasFile ? (byte) (0b11111111) : (byte) (0b00000000);
 		Arrays.fill(bitfield, fillValueByte);
     }
 

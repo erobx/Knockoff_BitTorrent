@@ -58,7 +58,7 @@ public class Peer {
 
         // Create server
         server = new Server(port);
-        // server.setDaemon(true);
+        server.setDaemon(true);
         server.start();
 
         // Establish TCP connections with all peers before
@@ -66,7 +66,7 @@ public class Peer {
 
         // Main loop
         while (unfinishedPeers != 0) {
-
+            break;
             // check if there's a message for me
 
             // check if enough time has passed for preferedNeighbors
@@ -202,7 +202,7 @@ public class Peer {
 
                 clients.put(neighbor.peerID, ch);
 
-                // ch.setDaemon(true);
+                ch.setDaemon(true);
                 ch.start();
 
                 this.sendMessage(MessageType.BITFIELD, neighbor.peerID);
@@ -216,17 +216,17 @@ public class Peer {
     }
 
     void sendMessage(Message.MessageType type, int receiverID) throws IOException {
-
-    ClientHandler ch = clients.get(receiverID);
-    if (ch == null){
-        throw new RuntimeException("Client receiver ID Cannot be found");
-    }
+        ClientHandler ch = clients.get(receiverID);
+        if (ch == null){
+            throw new RuntimeException("Client receiver ID Cannot be found");
+        }
 
         switch(type.getValue()) {
             case(5):
                 int length = bitfield.getLength();
                 Message msg = new MsgBitfield(length + 1, (byte)type.getValue(), bitfield.getBitfield(), receiverID, peerID);
                 msg.serialize(ch.getSocket().getOutputStream());
+                System.out.println("Bitfield message sent.");
         }
 
     }

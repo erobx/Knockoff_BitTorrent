@@ -92,9 +92,9 @@ public abstract class Message implements Serializable {
         return (int)type;
     }
 
-    public int getIndex() {
-        return byteArrayToInt();
-    }
+    // public int getIndex() {
+    //     return byteArrayToInt();
+    // }
 
     public Message getMessage(InputStream in, int senderID, int receiverID) {        
         try {
@@ -107,38 +107,37 @@ public abstract class Message implements Serializable {
 
             int index = byteArrayToInt(payload);
 
-            switch (type) {
+            switch ((int)type) {
                 // Choke - no payload
-                case MessageType.CHOKE.getValue():
+                case 0:
                     return new MsgChoke(length, (byte)MessageType.CHOKE.getValue(), null, senderID, receiverID);
                 // Unchoke - no payload
-                case MessageType.UNCHOKE.getValue():
+                case 1:
                     return new MsgUnchoke(length, (byte)MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
                 // Interested - no payload
-                case MessageType.INTERESTED.getValue():
+                case 2:
                     return new MsgInt(length, (byte)MessageType.INTERESTED.getValue(), null, senderID, receiverID);
                 // Not interested - no payload
-                case MessageType.NOT_INTERESTED.getValue():
+                case 3:
                     return new MsgNotInt(length, (byte)MessageType.NOT_INTERESTED.getValue(), null, senderID, receiverID);
                 // Have - index payload
-                case MessageType.HAVE.getValue():
-                    return new MsgHave(length, (byte)MessageType.HAVE.getValue(), index, senderID, receiverID);
+                case 4:
+                    return new MsgHave(length, (byte)MessageType.HAVE.getValue(), payload, senderID, receiverID);
                 // Bitfield - bitfield payload
-                case MessageType.BITFIELD.getValue():
+                case 5:
                     return new MsgBitfield(length, (byte)MessageType.BITFIELD.getValue(), payload, senderID, receiverID);
                 // Request - index payload
-                case MessageType.REQUEST.getValue():
-                    return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), index, senderID, receiverID);
-                // Piece - index + piece payload
-                case MessageType.REQUEST.getValue():
+                case 6:
                     return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), payload, senderID, receiverID);
-                default:
-                    break;
+                // Piece - index + piece payload
+                case 7:
+                    return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), payload, senderID, receiverID);
             }
         } catch (IOException ex) {
             System.out.println("Failed to deserialize.");
             ex.printStackTrace();
         }
+        return null;
     }
     
 }
