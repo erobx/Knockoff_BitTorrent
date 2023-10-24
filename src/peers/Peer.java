@@ -9,7 +9,10 @@ import util.ClientHandler;
 import util.Server;
 import messages.Handshake;
 import messages.Message;
+import messages.MsgBitfield;
 import messages.Handshake.Result;
+import messages.Message.MessageType;
+
 import java.util.HashMap;
 
 public class Peer {
@@ -201,12 +204,31 @@ public class Peer {
 
                 // ch.setDaemon(true);
                 ch.start();
+
+                this.sendMessage(MessageType.BITFIELD, neighbor.peerID);
+
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
+    }
+
+    void sendMessage(Message.MessageType type, int receiverID) throws IOException {
+
+    ClientHandler ch = clients.get(receiverID);
+    if (ch == null){
+        throw new RuntimeException("Client receiver ID Cannot be found");
+    }
+
+        switch(type.getValue()) {
+            case(5):
+                int length = bitfield.getLength();
+                Message msg = new MsgBitfield(length + 1, (byte)type.getValue(), bitfield.getBitfield(), receiverID, peerID);
+                msg.serialize(ch.getSocket().getOutputStream());
+        }
+
     }
 
     
