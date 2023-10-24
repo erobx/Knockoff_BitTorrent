@@ -52,9 +52,9 @@ public class Peer {
         bitfield = new Bitfield(numPieces, hasFile);
         unfinishedPeers = numPeers;
 
-        // Create server 
+        // Create server
         server = new Server(port);
-        //server.setDaemon(true);
+        // server.setDaemon(true);
         server.start();
 
         // Establish TCP connections with all peers before
@@ -62,13 +62,21 @@ public class Peer {
 
         // Main loop
         while (unfinishedPeers != 0) {
-            
+
+            // check if there's a message for me
+
+            // check if enough time has passed for preferedNeighbors
+
+            // check if enough time has passed for optimistically unchoked
+
+            // if there is a message do the thing
+
         }
 
         System.out.println("End of simulation.");
 
         // Close connections
-        
+
     }
 
     private void readConfig() {
@@ -118,8 +126,8 @@ public class Peer {
         } catch (Exception ex) {
             System.out.println(ex.toString());
         }
-        numPieces = (int) Math.ceil((double)fileSize / pieceSize);
-        lastPieceSize = fileSize - ((numPieces-1) * pieceSize);
+        numPieces = (int) Math.ceil((double) fileSize / pieceSize);
+        lastPieceSize = fileSize - ((numPieces - 1) * pieceSize);
         prefPeers = new int[numPrefNeighbors];
     }
 
@@ -133,14 +141,14 @@ public class Peer {
          * 1006 lin114-05.cise.ufl.edu 6008 1
          */
 
-         try {
+        try {
             String line;
             BufferedReader in = new BufferedReader(new FileReader("PeerInfo.cfg"));
-            numPeers = (int)in.lines().count();
+            numPeers = (int) in.lines().count();
             in.close();
 
             in = new BufferedReader(new FileReader("PeerInfo.cfg"));
-            
+
             while ((line = in.readLine()) != null) {
                 String[] tokens = line.split("\\s+");
                 int peerID = Integer.parseInt(tokens[0]);
@@ -155,7 +163,7 @@ public class Peer {
                     this.validPeerID = true;
                     break;
                 }
-                peers.addElement(new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces)); 
+                peers.addElement(new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
             }
             in.close();
 
@@ -174,12 +182,12 @@ public class Peer {
             Socket clientSocket;
             try {
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
-                
+
                 // Send handshake
                 try {
-                    //PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                    // PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                     Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
-                    
+
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -189,7 +197,7 @@ public class Peer {
                 // Add ch to list of clientsockets?
                 clients.put(neighbor.peerID, ch);
 
-                //ch.setDaemon(true); 
+                // ch.setDaemon(true);
                 ch.start();
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
@@ -199,5 +207,4 @@ public class Peer {
         }
     }
 
-    
 }
