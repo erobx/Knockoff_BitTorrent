@@ -22,5 +22,9 @@ public class Bitfield {
         return bitfield;
     }
 
+    public int getLength() {
+        return bitfield.length;
+    }
+
     // Change index of bit function
 }

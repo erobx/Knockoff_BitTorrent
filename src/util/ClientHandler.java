@@ -31,5 +31,9 @@ public class ClientHandler extends Thread {
         }
     }
 
+    public Socket getSocket() {
+        return clientSocket;
+    }
+
     
 }

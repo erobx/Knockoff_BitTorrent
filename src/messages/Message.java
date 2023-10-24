@@ -3,7 +3,7 @@ package messages;
 import java.io.*;
 import java.nio.ByteBuffer;
 
-public class Message implements Serializable {
+public abstract class Message implements Serializable {
     /*
      * Example:
      * Message length is 25 bytes. Message length field will contain the value 21
@@ -17,6 +17,27 @@ public class Message implements Serializable {
 
     public final int senderID;
     public final int receiverID;
+
+    public enum MessageType {
+        CHOKE(0),
+        UNCHOKE(1),
+        INTERESTED(2),
+        NOT_INTERESTED(3),
+        HAVE(4),
+        BITFIELD(5),
+        REQUEST(6),
+        PIECE(7);
+
+        private final int value;
+
+        MessageType(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     public Message(int senderID, int receiverID) {
         this.senderID = senderID;
@@ -32,17 +53,7 @@ public class Message implements Serializable {
         this.receiverID = receiverID;
     }
 
-    // public Message(int length, byte type, byte[] payload) {
-    //     this.length = length;
-    //     this.type = type;
-    //     this.payload = payload;
-    // }
-
-    // public Message(int length, byte type) {
-    //     this.length = length;
-    //     this.type = type;
-    // }
-
+    // Serializes messages and sends to output stream
     public void serialize(OutputStream out) throws IOException {
         DataOutputStream dataOutputStream = new DataOutputStream(out);
 
@@ -54,17 +65,17 @@ public class Message implements Serializable {
         dataOutputStream.flush();
     }
 
-    public static Message deserialize(InputStream in, int senderID, int receiverID) throws IOException {
-        DataInputStream dataInputStream = new DataInputStream(in);
+    // public static Message deserialize(InputStream in, int senderID, int receiverID) throws IOException {
+    //     DataInputStream dataInputStream = new DataInputStream(in);
 
-        int length = dataInputStream.readInt();
-        byte type = dataInputStream.readByte();
-        byte[] payload = new byte[length-1];
-        dataInputStream.readFully(payload);
+    //     int length = dataInputStream.readInt();
+    //     byte type = dataInputStream.readByte();
+    //     byte[] payload = new byte[length-1];
+    //     dataInputStream.readFully(payload);
 
-        Message msg = new Message(length, type, payload, senderID,receiverID);
-        return msg;
-    }
+    //     Message msg = new Message(length, type, payload, senderID, receiverID);
+    //     return msg;
+    // }
 
     public static byte[] intToByteArray(int value) {
         ByteBuffer buffer = ByteBuffer.allocate(4);
@@ -72,7 +83,7 @@ public class Message implements Serializable {
         return buffer.array();
     }
 
-    public int byteArrayToInt() {
+    public int byteArrayToInt(byte[] payload) {
         ByteBuffer buffer = ByteBuffer.wrap(payload);
         return buffer.getInt();
     }
@@ -85,48 +96,42 @@ public class Message implements Serializable {
         return byteArrayToInt();
     }
 
-    void getMessage(InputStream in) {
+    public Message getMessage(InputStream in, int senderID, int receiverID) {        
         try {
-            Message msg = Message.deserialize(in);
-            int type = msg.getType();
-            int index;
+            DataInputStream dataInputStream = new DataInputStream(in);
+
+            int length = dataInputStream.readInt();
+            byte type = dataInputStream.readByte();
+            byte[] payload = new byte[length-1];
+            dataInputStream.readFully(payload);
+
+            int index = byteArrayToInt(payload);
 
             switch (type) {
                 // Choke - no payload
-                case 0:
-                    System.out.println("Choke me daddy.");
-                    break;
+                case MessageType.CHOKE.getValue():
+                    return new MsgChoke(length, (byte)MessageType.CHOKE.getValue(), null, senderID, receiverID);
                 // Unchoke - no payload
-                case 1:
-                    System.out.println("Unchoke me daddy uWu.");
-                    break;
+                case MessageType.UNCHOKE.getValue():
+                    return new MsgUnchoke(length, (byte)MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
                 // Interested - no payload
-                case 2:
-                    System.out.println("Omg you're so tallllll!");
-                    break;
+                case MessageType.INTERESTED.getValue():
+                    return new MsgInt(length, (byte)MessageType.INTERESTED.getValue(), null, senderID, receiverID);
                 // Not interested - no payload
-                case 3:
-                    System.out.println("Sorry I have a boyfriend.");
-                    break;
+                case MessageType.NOT_INTERESTED.getValue():
+                    return new MsgNotInt(length, (byte)MessageType.NOT_INTERESTED.getValue(), null, senderID, receiverID);
                 // Have - index payload
-                case 4:
-                    index = msg.getIndex();
-                    System.out.println("I have piece at index: " + index);
-                    break;
+                case MessageType.HAVE.getValue():
+                    return new MsgHave(length, (byte)MessageType.HAVE.getValue(), index, senderID, receiverID);
                 // Bitfield - bitfield payload
-                case 5:
-                    System.out.println("Send me your bitfield bitch.");
-                    break;
+                case MessageType.BITFIELD.getValue():
+                    return new MsgBitfield(length, (byte)MessageType.BITFIELD.getValue(), payload, senderID, receiverID);
                 // Request - index payload
-                case 6:
-                    index = msg.getIndex();
-                    System.out.println("Requested index: " + index);
-                    // get piece
-                    break;
+                case MessageType.REQUEST.getValue():
+                    return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), index, senderID, receiverID);
                 // Piece - index + piece payload
-                case 7:
-                    System.out.println("Give me a piece of dat ass.");
-                    break;
+                case MessageType.REQUEST.getValue():
+                    return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), payload, senderID, receiverID);
                 default:
                     break;
             }
@@ -135,4 +140,5 @@ public class Message implements Serializable {
             ex.printStackTrace();
         }
     }
+    
 }
