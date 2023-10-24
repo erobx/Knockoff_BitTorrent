@@ -1,6 +1,7 @@
 package test_project;
 import java.io.*;
 import java.util.Vector;
+import java.lang.System;
 
 /*
  * Once peerProcess starts, it reads Common.cfg and PeerInfo.cfg.
@@ -27,6 +28,9 @@ public class peerProcess {
     static int port;            // should pass this to client and server I'd assume
     static boolean hasFile = false;
     static boolean validPeerID = false;
+
+    long lastUnchokingTime; // Last time from when preferred neighbors was updated (unchoked peers) 
+    long lastOptimisticUnchokingTime; // Last time from when the optimistically unchoked neighbor was updated
     
     public Vector<Boolean> bitfield = new Vector<>();
     public Vector<PeerInfo> peers = new Vector<>();
