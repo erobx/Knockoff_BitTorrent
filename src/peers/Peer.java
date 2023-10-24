@@ -8,6 +8,7 @@ import util.Bitfield;
 import util.ClientHandler;
 import util.Server;
 import messages.Handshake;
+import messages.Message;
 import messages.Handshake.Result;
 import java.util.HashMap;
 
@@ -195,6 +196,7 @@ public class Peer {
                 // Handle clients
                 ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID);
                 // Add ch to list of clientsockets?
+
                 clients.put(neighbor.peerID, ch);
 
                 // ch.setDaemon(true);
@@ -207,4 +209,5 @@ public class Peer {
         }
     }
 
+    
 }

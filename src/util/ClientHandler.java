@@ -24,10 +24,12 @@ public class ClientHandler extends Thread {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
             String msg;
             while ((msg = in.readLine()) != null) {
-                // add to msg queue
+                
             }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
+
+    
 }

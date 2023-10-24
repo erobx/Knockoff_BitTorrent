@@ -21,4 +21,6 @@ public class Bitfield {
     public byte[] getBitfield() {
         return bitfield;
     }
+
+    // Change index of bit function
 }
