@@ -1,5 +1,4 @@
 import java.io.IOException;
-
 import peers.Peer;
 
 public class peerProcess {
