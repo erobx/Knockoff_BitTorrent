@@ -7,4 +7,11 @@ public class MsgRequest extends Message {
         // TODO Auto-generated constructor stub
     }
 
+    // TODO Fully implement
+    @Override
+    public void handle() {
+        System.out.println("REQUEST message received from" + senderID + " at " + receiverID);
+
+    }
+
 }

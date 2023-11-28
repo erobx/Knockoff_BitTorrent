@@ -24,20 +24,21 @@ public class Server extends Thread {
                 // Wait for handshake
                 int senderID = -1;
                 try {
-                    //BufferedReader in = new BufferedReader(new InputStreamReader(
-                    //    clientSocket.getInputStream()));
+                    // BufferedReader in = new BufferedReader(new InputStreamReader(
+                    // clientSocket.getInputStream()));
                     senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream());
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
 
                 // Create new ClientHandler
+                // TODO ask about this
                 ClientHandler ch = new ClientHandler(clientSocket, senderID);
                 // Add ch to list of clientsockets?
 
                 ch.setDaemon(true);
                 ch.start();
-                
+
             }
         } catch (IOException ex) {
             ex.printStackTrace();

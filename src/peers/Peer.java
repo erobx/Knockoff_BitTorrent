@@ -1,6 +1,9 @@
 package peers;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.net.*;
 import java.io.*;
 
@@ -10,16 +13,19 @@ import util.Server;
 import messages.Handshake;
 import messages.Message;
 import messages.MsgBitfield;
+import messages.MsgChoke;
+import messages.MsgHave;
+import messages.MsgInt;
+import messages.MsgNotInt;
+import messages.MsgPiece;
+import messages.MsgRequest;
+import messages.MsgUnchoke;
 import messages.Handshake.Result;
 import messages.Message.MessageType;
-
-import java.util.HashMap;
 
 public class Peer {
     // Variables from config
     private int numPrefNeighbors;
-    private int unchokingInterval;
-    private int opUnchokeInterval;
     public final int peerID;
     private String fileName;
     private int fileSize;
@@ -32,7 +38,7 @@ public class Peer {
     public static Bitfield bitfield;
     public static int unfinishedPeers;
     private Vector<Neighbor> peers = new Vector<>();
-    private HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
+    public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
     private int[] prefPeers;
     private int optUnchokedPeer;
@@ -41,6 +47,16 @@ public class Peer {
 
     private Server server;
 
+    // Timing Variables
+    private long lastPreferredUpdateTime;
+    private long lastOpUnchokeUpdateTime;
+    private int updatePrefInterval;
+    private int opUnchokeInterval;
+    private long lastTimeoutCheck;
+    private int unchokingInterval;
+
+    private BlockingQueue<MessageObj> messageQueue = new LinkedBlockingQueue<MessageObj>();
+
     public Peer(int peerID) {
         this.peerID = peerID;
     }
@@ -48,13 +64,25 @@ public class Peer {
     /*
      * Method called by peerProcess to control main loop.
      */
-    public void run() throws IOException {
+
+    // Temporary Stuff for testing
+    private void timeout() {
+
+        long TimeoutValue = 30; // 30 seconds
+
+        System.out.println((System.currentTimeMillis() - lastTimeoutCheck) / 1000);
+
+        if ((System.currentTimeMillis() - lastTimeoutCheck) / 1000 >= TimeoutValue) {
+            unfinishedPeers = 0;
+        }
+    }
+
+    public void run() throws Exception {
         // Read config files
         readConfig();
 
         // Init bitfield
         bitfield = new Bitfield(numPieces, hasFile);
-        unfinishedPeers = numPeers;
 
         // Create server
         server = new Server(port);
@@ -64,22 +92,61 @@ public class Peer {
         // Establish TCP connections with all peers before
         createClients();
 
+        unfinishedPeers = numPeers;
+        lastTimeoutCheck = System.currentTimeMillis();
         // Main loop
         while (unfinishedPeers != 0) {
-            break;
+
+            // keep track of total run time
+            // (can be removed once termination condition is created)
+            timeout();
+
             // check if there's a message for me
+            MessageObj messageObj = null;
+            try {
+                // try to get a message from buffer for 5 seconds
+                System.out.println("Trying to get a message from buffer");
+                messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                System.out.println("Failed to get message");
+                // throw new RuntimeException(e);
+            }
 
             // check if enough time has passed for preferedNeighbors
+            if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
+                System.out.println("Updating preferred neighbors");
+                updatePreferred(); // TODO
+                lastPreferredUpdateTime = System.currentTimeMillis();
+            }
 
             // check if enough time has passed for optimistically unchoked
+            if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
+                System.out.println("Updating optimistically-unchoked neighbor");
+                updateOptimisticUnchoke(); // TODO
+                lastOpUnchokeUpdateTime = System.currentTimeMillis();
+            }
 
             // if there is a message do the thing
+            if (messageObj != null) {
+                byte[] messageBytes = messageObj.message;
+                int senderID = messageObj.senderID;
 
+                Message m = Message.getMessage(messageBytes, senderID, peerID);
+                m.handle(); // will handle based on what message it is
+            }
         }
 
-        System.out.println("End of simulation.");
+        System.out.println("Closing");
 
         // Close connections
+
+    }
+
+    private void updatePreferred() {
+
+    }
+
+    private void updateOptimisticUnchoke() {
 
     }
 
@@ -197,7 +264,7 @@ public class Peer {
                 }
 
                 // Handle clients
-                ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID);
+                ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID, this);
                 // Add ch to list of clientsockets?
 
                 clients.put(neighbor.peerID, ch);
@@ -205,7 +272,7 @@ public class Peer {
                 ch.setDaemon(true);
                 ch.start();
 
-                this.sendMessage(MessageType.BITFIELD, neighbor.peerID);
+                Message.sendMessage(MessageType.BITFIELD, neighbor.peerID, this.peerID, bitfield.getBitfield());
 
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
@@ -215,21 +282,8 @@ public class Peer {
         }
     }
 
-    void sendMessage(Message.MessageType type, int receiverID) throws IOException {
-        ClientHandler ch = clients.get(receiverID);
-        if (ch == null){
-            throw new RuntimeException("Client receiver ID Cannot be found");
-        }
-
-        switch(type.getValue()) {
-            case(5):
-                int length = bitfield.getLength();
-                Message msg = new MsgBitfield(length + 1, (byte)type.getValue(), bitfield.getBitfield(), receiverID, peerID);
-                msg.serialize(ch.getSocket().getOutputStream());
-                System.out.println("Bitfield message sent.");
-        }
-
+    public void addToMessageQueue(byte[] msg, int peerID) {
+        messageQueue.add(new MessageObj(msg, peerID));
     }
 
-    
 }

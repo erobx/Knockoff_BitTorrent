@@ -7,4 +7,11 @@ public class MsgNotInt extends Message {
         // TODO Auto-generated constructor stub
     }
 
+    // TODO Fully implement
+    @Override
+    public void handle() {
+        System.out.println("NOT_INTERESTED message received from" + senderID + " at " + receiverID);
+
+    }
+
 }
