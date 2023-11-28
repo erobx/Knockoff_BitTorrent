@@ -55,7 +55,7 @@ public class Peer {
     private long lastTimeoutCheck;
     private int unchokingInterval;
 
-    private static BlockingQueue<MessageObj> messageQueue = new LinkedBlockingQueue<MessageObj>();
+    private BlockingQueue<MessageObj> messageQueue = new LinkedBlockingQueue<MessageObj>();
 
     public Peer(int peerID) {
         this.peerID = peerID;
@@ -68,7 +68,9 @@ public class Peer {
     // Temporary Stuff for testing
     private void timeout() {
 
-        long TimeoutValue = 10000; // ten seconds (in milliseconds)
+        long TimeoutValue = 30; // 30 seconds
+
+        System.out.println((System.currentTimeMillis() - lastTimeoutCheck) / 1000);
 
         if ((System.currentTimeMillis() - lastTimeoutCheck) / 1000 >= TimeoutValue) {
             unfinishedPeers = 0;
@@ -81,7 +83,6 @@ public class Peer {
 
         // Init bitfield
         bitfield = new Bitfield(numPieces, hasFile);
-        unfinishedPeers = numPeers;
 
         // Create server
         server = new Server(port);
@@ -91,6 +92,8 @@ public class Peer {
         // Establish TCP connections with all peers before
         createClients();
 
+        unfinishedPeers = numPeers;
+        lastTimeoutCheck = System.currentTimeMillis();
         // Main loop
         while (unfinishedPeers != 0) {
 
@@ -99,26 +102,27 @@ public class Peer {
             timeout();
 
             // check if there's a message for me
-            MessageObj messageObj;
+            MessageObj messageObj = null;
             try {
                 // try to get a message from buffer for 5 seconds
                 System.out.println("Trying to get a message from buffer");
                 messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                System.out.println("Failed to get message");
+                // throw new RuntimeException(e);
             }
 
             // check if enough time has passed for preferedNeighbors
             if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
                 System.out.println("Updating preferred neighbors");
-                // updatePreferred(); TODO
+                updatePreferred(); // TODO
                 lastPreferredUpdateTime = System.currentTimeMillis();
             }
 
             // check if enough time has passed for optimistically unchoked
             if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
                 System.out.println("Updating optimistically-unchoked neighbor");
-                // optimisticUnchoke(); TODO
+                updateOptimisticUnchoke(); // TODO
                 lastOpUnchokeUpdateTime = System.currentTimeMillis();
             }
 
@@ -132,9 +136,17 @@ public class Peer {
             }
         }
 
-        System.out.println("End of simulation.");
+        System.out.println("Closing");
 
         // Close connections
+
+    }
+
+    private void updatePreferred() {
+
+    }
+
+    private void updateOptimisticUnchoke() {
 
     }
 
@@ -252,7 +264,7 @@ public class Peer {
                 }
 
                 // Handle clients
-                ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID);
+                ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID, this);
                 // Add ch to list of clientsockets?
 
                 clients.put(neighbor.peerID, ch);
@@ -270,7 +282,7 @@ public class Peer {
         }
     }
 
-    public static void addToMessageQueue(byte[] msg, int peerID) {
+    public void addToMessageQueue(byte[] msg, int peerID) {
         messageQueue.add(new MessageObj(msg, peerID));
     }
 
