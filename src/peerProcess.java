@@ -10,6 +10,11 @@ public class peerProcess {
 
         int peerID = Integer.parseInt(args[0]);
         Peer peer = new Peer(peerID);
-        peer.run();
+        try {
+            peer.run();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

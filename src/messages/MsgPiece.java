@@ -7,4 +7,10 @@ public class MsgPiece extends Message {
         // TODO Auto-generated constructor stub
     }
 
+    // TODO Fully implement
+    @Override
+    public void handle() {
+        System.out.println("PIECE message received from" + senderID + " at " + receiverID);
+
+    }
 }

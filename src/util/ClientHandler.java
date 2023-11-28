@@ -2,6 +2,9 @@ package util;
 
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
+
+import peers.Peer;
 
 public class ClientHandler extends Thread {
     private final Socket clientSocket;
@@ -22,9 +25,9 @@ public class ClientHandler extends Thread {
     @Override
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-            String msg;
-            while ((msg = in.readLine()) != null) {
-                
+            byte[] msg;
+            while ((msg = in.readLine().getBytes()) != null) {
+                Peer.addToMessageQueue(msg, peerID);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -34,6 +37,4 @@ public class ClientHandler extends Thread {
     public Socket getSocket() {
         return clientSocket;
     }
-
-    
 }
