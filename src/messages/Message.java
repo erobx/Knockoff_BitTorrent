@@ -1,6 +1,7 @@
 package messages;
 
 import java.io.*;
+import java.net.http.HttpClient.Redirect;
 import java.nio.ByteBuffer;
 
 public abstract class Message implements Serializable {
@@ -10,7 +11,7 @@ public abstract class Message implements Serializable {
      * since the field itself is 4 bytes. Removing 1 byte (type field) will give
      * us the length of the payload, 20.
      */
-    
+
     private int length;
     private byte type;
     private byte[] payload = null;
@@ -37,13 +38,22 @@ public abstract class Message implements Serializable {
         public int getValue() {
             return value;
         }
+
+        public static MessageType getTypeByInt(int value) {
+            for (MessageType messageType : MessageType.values()) {
+                if (messageType.getValue() == value) {
+                    return messageType;
+                }
+            }
+            return null; // Or throw an exception if needed
+        }
+
     }
 
     public Message(int senderID, int receiverID) {
         this.senderID = senderID;
         this.receiverID = receiverID;
     }
-
 
     public Message(int length, byte type, byte[] payload, int senderID, int receiverID) {
         this.length = length;
@@ -65,16 +75,17 @@ public abstract class Message implements Serializable {
         dataOutputStream.flush();
     }
 
-    // public static Message deserialize(InputStream in, int senderID, int receiverID) throws IOException {
-    //     DataInputStream dataInputStream = new DataInputStream(in);
+    // public static Message deserialize(InputStream in, int senderID, int
+    // receiverID) throws IOException {
+    // DataInputStream dataInputStream = new DataInputStream(in);
 
-    //     int length = dataInputStream.readInt();
-    //     byte type = dataInputStream.readByte();
-    //     byte[] payload = new byte[length-1];
-    //     dataInputStream.readFully(payload);
+    // int length = dataInputStream.readInt();
+    // byte type = dataInputStream.readByte();
+    // byte[] payload = new byte[length-1];
+    // dataInputStream.readFully(payload);
 
-    //     Message msg = new Message(length, type, payload, senderID, receiverID);
-    //     return msg;
+    // Message msg = new Message(length, type, payload, senderID, receiverID);
+    // return msg;
     // }
 
     public static byte[] intToByteArray(int value) {
@@ -89,55 +100,56 @@ public abstract class Message implements Serializable {
     }
 
     public int getType() {
-        return (int)type;
+        return (int) type;
     }
 
     // public int getIndex() {
-    //     return byteArrayToInt();
+    // return byteArrayToInt();
     // }
 
-    public Message getMessage(InputStream in, int senderID, int receiverID) {        
+    public Message getMessage(InputStream in, int senderID, int receiverID) {
         try {
             DataInputStream dataInputStream = new DataInputStream(in);
 
             int length = dataInputStream.readInt();
             byte type = dataInputStream.readByte();
-            byte[] payload = new byte[length-1];
+            byte[] payload = new byte[length - 1];
             dataInputStream.readFully(payload);
 
             int index = byteArrayToInt(payload);
 
-            switch ((int)type) {
+            switch (MessageType.getTypeByInt((int) type)) {
                 // Choke - no payload
-                case 0:
-                    return new MsgChoke(length, (byte)MessageType.CHOKE.getValue(), null, senderID, receiverID);
+                case CHOKE -> new MsgChoke(length, (byte) MessageType.CHOKE.getValue(), null, senderID, receiverID);
                 // Unchoke - no payload
-                case 1:
-                    return new MsgUnchoke(length, (byte)MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
+                case UNCHOKE ->
+                    new MsgUnchoke(length, (byte) MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
                 // Interested - no payload
-                case 2:
-                    return new MsgInt(length, (byte)MessageType.INTERESTED.getValue(), null, senderID, receiverID);
+                case INTERESTED ->
+                    new MsgInt(length, (byte) MessageType.INTERESTED.getValue(), null, senderID, receiverID);
                 // Not interested - no payload
-                case 3:
-                    return new MsgNotInt(length, (byte)MessageType.NOT_INTERESTED.getValue(), null, senderID, receiverID);
+                case NOT_INTERESTED ->
+                    new MsgNotInt(length, (byte) MessageType.NOT_INTERESTED.getValue(), null, senderID, receiverID);
                 // Have - index payload
-                case 4:
-                    return new MsgHave(length, (byte)MessageType.HAVE.getValue(), payload, senderID, receiverID);
+                case HAVE -> new MsgHave(length, (byte) MessageType.HAVE.getValue(), payload, senderID, receiverID);
                 // Bitfield - bitfield payload
-                case 5:
-                    return new MsgBitfield(length, (byte)MessageType.BITFIELD.getValue(), payload, senderID, receiverID);
+                case BITFIELD ->
+                    new MsgBitfield(length, (byte) MessageType.BITFIELD.getValue(), payload, senderID, receiverID);
                 // Request - index payload
-                case 6:
-                    return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), payload, senderID, receiverID);
+                case REQUEST ->
+                    new MsgHave(length, (byte) MessageType.REQUEST.getValue(), payload, senderID, receiverID);
                 // Piece - index + piece payload
-                case 7:
-                    return new MsgHave(length, (byte)MessageType.REQUEST.getValue(), payload, senderID, receiverID);
+                // TODO PIECE message could be setup wrong
+                case PIECE ->
+                    new MsgPiece(length, (byte) MessageType.PIECE.getValue(), payload, senderID, receiverID);
+                // Add more cases as needed
             }
+
         } catch (IOException ex) {
             System.out.println("Failed to deserialize.");
             ex.printStackTrace();
         }
         return null;
     }
-    
+
 }
