@@ -13,10 +13,14 @@ import util.ClientHandler;
 
 public abstract class Message implements Serializable {
     /*
-     * Example:
      * Message length is 25 bytes. Message length field will contain the value 21
      * since the field itself is 4 bytes. Removing 1 byte (type field) will give
      * us the length of the payload, 20.
+     */
+
+    /*
+     * Message length is 22 bytes. Bitfield payload length is 17 bytes.
+     * Message length field will contain the value 18 (type + payload).
      */
 
     private int length;
@@ -71,40 +75,23 @@ public abstract class Message implements Serializable {
     }
 
     // Serializes messages and sends to output stream
-    // TODO this isn't being picked up by the input stream
     public void serialize(OutputStream out) throws IOException {
-        // DataOutputStream dataOutputStream = new DataOutputStream(out);
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(out));
 
-        // dataOutputStream.writeInt(length);
-        ByteBuffer buffer = ByteBuffer.allocate(1 + 4 + payload.length);
+        ByteBuffer buffer = ByteBuffer.allocate(4 + 1 + payload.length);
+
         buffer.putInt(length);
-        // dataOutputStream.writeByte(type);
+      
         buffer.put(type);
+
         if (payload != null) {
-            // dataOutputStream.write(payload);
             buffer.put(payload);
         }
-        // dataOutputStream.flush();
-        Charset charset = Charset.forName("US-ASCII");
-        System.out.println("Serialized message" + charset.decode(buffer).toString());
-        output.write(charset.decode(buffer).toString());
+
+        output.write(new String(buffer.array()));
         output.newLine();
         output.flush();
     }
-
-    // public static Message deserialize(InputStream in, int senderID, int
-    // receiverID) throws IOException {
-    // DataInputStream dataInputStream = new DataInputStream(in);
-
-    // int length = dataInputStream.readInt();
-    // byte type = dataInputStream.readByte();
-    // byte[] payload = new byte[length-1];
-    // dataInputStream.readFully(payload);
-
-    // Message msg = new Message(length, type, payload, senderID, receiverID);
-    // return msg;
-    // }
 
     public static byte[] intToByteArray(int value) {
         ByteBuffer buffer = ByteBuffer.allocate(4);
@@ -153,19 +140,29 @@ public abstract class Message implements Serializable {
     // return byteArrayToInt();
     // }
 
-    // Essentially Deserialize just checks the input stream for a message and
-    // returns the message as a message obj
+
     public static Message getMessage(byte[] messageBytes, int senderID, int receiverID) {
         try {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
             DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
 
+            // Read the int (length)
             int length = dataInputStream.readInt();
-            byte type = dataInputStream.readByte();
-            byte[] payload = new byte[length - 1];
-            dataInputStream.readFully(payload);
 
-            int index = byteArrayToInt(payload);
+            // Read the byte (type)
+            byte type = dataInputStream.readByte();
+
+            // Read the rest of the bytes as payload
+            byte[] payload = new byte[length - 1]; // subtract 1 for the byte (type)
+
+            try {
+                dataInputStream.readFully(payload);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                System.out.println("Couldn't retrieve payload.");
+            }
+
+            // int index = byteArrayToInt(payload);
 
             Message message = null;
 
@@ -201,7 +198,6 @@ public abstract class Message implements Serializable {
             }
 
             return message;
-
         } catch (IOException ex) {
             System.out.println("Failed to deserialize.");
             ex.printStackTrace();

@@ -9,15 +9,20 @@ import messages.Handshake;
 public class Server extends Thread {
     private final int port;
     private ServerSocket listener;
+    private int peerID;
+    private Peer peer;
 
-    public Server(int port) {
+    public Server(int port, int peerID, Peer peer) {
         this.port = port;
+        this.peerID = peerID;
+        this.peer = peer;
     }
 
     @Override
     public void run() {
         try {
             listener = new ServerSocket(port);
+            listener.setReuseAddress(true);
             System.out.println("[Server] Waiting for connection on port " + port);
             while (true) {
                 Socket clientSocket = listener.accept();
@@ -25,20 +30,17 @@ public class Server extends Thread {
                 // Wait for handshake
                 int senderID = -1;
                 try {
-                    // BufferedReader in = new BufferedReader(new InputStreamReader(
-                    // clientSocket.getInputStream()));
-                    senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream());
+                    senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
 
                 // Create new ClientHandler
-                // TODO ask about this
-                ClientHandler ch = new ClientHandler(clientSocket, senderID);
+                ClientHandler ch = new ClientHandler(clientSocket, senderID, peer);
                 Peer.clients.put(senderID, ch);
 
                 ch.setDaemon(true);
-                ch.start();
+                new Thread(ch).start();
 
             }
         } catch (IOException ex) {

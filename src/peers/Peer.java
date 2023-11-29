@@ -68,7 +68,7 @@ public class Peer {
     // Temporary Stuff for testing
     private void timeout() {
 
-        long TimeoutValue = 30; // 30 seconds
+        long TimeoutValue = 100; // 30 seconds
 
         System.out.println((System.currentTimeMillis() - lastTimeoutCheck) / 1000);
 
@@ -85,7 +85,7 @@ public class Peer {
         bitfield = new Bitfield(numPieces, hasFile);
 
         // Create server
-        server = new Server(port);
+        server = new Server(port, peerID, this);
         server.setDaemon(true);
         server.start();
 
@@ -115,15 +115,15 @@ public class Peer {
 
             // check if enough time has passed for preferedNeighbors
             if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
-                System.out.println("Updating preferred neighbors");
+                // System.out.println("Updating preferred neighbors");
                 updatePreferred();
                 lastPreferredUpdateTime = System.currentTimeMillis();
             }
 
             // check if enough time has passed for optimistically unchoked
             if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
-                System.out.println("Updating optimistically-unchoked neighbor");
-                optimisticUnchoke();
+                // System.out.println("Updating optimistically-unchoked neighbor");
+                updateOptimisticUnchoke();
                 lastOpUnchokeUpdateTime = System.currentTimeMillis();
             }
 
@@ -250,8 +250,7 @@ public class Peer {
 
                 // Send handshake
                 try {
-                    // PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
+                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID, neighbor.peerID);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();

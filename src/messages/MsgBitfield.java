@@ -19,10 +19,10 @@ public class MsgBitfield extends Message {
 
     // TODO Debug and add logging
     @Override
-    public void handle() throws IOException {
-        String message = String.format("BITFIELD message received from %s at %s: %s",
-                senderID, receiverID, Arrays.toString(receivedBitfield.getBitfield()));
-        System.out.println(message);
+    public void handle() {
+        System.out.println("BITFIELD message received from " + senderID + " at " + receiverID + " : "
+                + Arrays.toString(bitfield.getBitfield()));
+        // System.out.println("BITFIELD message received from " + senderID + " at " + receiverID);
 
         // Check if bitfield has the pieces that receiver wants
         Bitfield myBitfield = Peer.bitfield;

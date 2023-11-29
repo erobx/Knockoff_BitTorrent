@@ -25,25 +25,25 @@ public class ClientHandler extends Thread {
     }
 
     // COULD BE REMOVED I DONT KNOW THOUGH, currently used by Server.java
-    public ClientHandler(Socket clientSocket, int peerID) {
-        this.clientSocket = clientSocket;
-        this.peerID = peerID;
-        try {
-            out = clientSocket.getOutputStream();
-            out.flush();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    // public ClientHandler(Socket clientSocket, int peerID) {
+    //     this.clientSocket = clientSocket;
+    //     this.peerID = peerID;
+    //     try {
+    //         out = clientSocket.getOutputStream();
+    //         out.flush();
+    //     } catch (IOException ex) {
+    //         throw new RuntimeException(ex);
+    //     }
+    // }
 
     @Override
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-            byte[] msg;
-            while ((msg = in.readLine().getBytes()) != null) {
-                // TODO This just isn't happening, most likely a input/output buffer problem
-                thisPeer.addToMessageQueue(msg, peerID);
-                System.out.println("Message added to queue");
+            String msg = "";
+            while ((msg = in.readLine()) != null) {
+                // System.out.println("Message length: " + msg.getBytes().length);
+                thisPeer.addToMessageQueue(msg.getBytes(), peerID);
+                // System.out.println("Message added to queue");
             }
         } catch (IOException ex) {
             ex.printStackTrace();
