@@ -3,6 +3,7 @@ package util;
 import java.io.*;
 import java.net.*;
 import messages.Message;
+import peers.Peer;
 import messages.Handshake;
 
 public class Server extends Thread {
@@ -34,7 +35,7 @@ public class Server extends Thread {
                 // Create new ClientHandler
                 // TODO ask about this
                 ClientHandler ch = new ClientHandler(clientSocket, senderID);
-                // Add ch to list of clientsockets?
+                Peer.clients.put(senderID, ch);
 
                 ch.setDaemon(true);
                 ch.start();

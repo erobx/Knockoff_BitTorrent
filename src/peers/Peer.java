@@ -94,6 +94,7 @@ public class Peer {
 
         unfinishedPeers = numPeers;
         lastTimeoutCheck = System.currentTimeMillis();
+
         // Main loop
         while (unfinishedPeers != 0) {
 
@@ -109,7 +110,7 @@ public class Peer {
                 messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 System.out.println("Failed to get message");
-                // throw new RuntimeException(e);
+                throw new RuntimeException(e);
             }
 
             // check if enough time has passed for preferedNeighbors
@@ -265,7 +266,6 @@ public class Peer {
 
                 // Handle clients
                 ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID, this);
-                // Add ch to list of clientsockets?
 
                 clients.put(neighbor.peerID, ch);
 

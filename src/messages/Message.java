@@ -3,6 +3,9 @@ package messages;
 import java.io.*;
 import java.net.http.HttpClient.Redirect;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
+import javax.swing.plaf.PanelUI;
 
 import peers.Peer;
 import util.ClientHandler;
@@ -69,14 +72,24 @@ public abstract class Message implements Serializable {
     // Serializes messages and sends to output stream
     // TODO this isn't being picked up by the input stream
     public void serialize(OutputStream out) throws IOException {
-        DataOutputStream dataOutputStream = new DataOutputStream(out);
+        // DataOutputStream dataOutputStream = new DataOutputStream(out);
+        BufferedWriter output = new BufferedWriter(new OutputStreamWriter(out));
 
-        dataOutputStream.writeInt(length);
-        dataOutputStream.writeByte(type);
-        if (payload != null)
-            dataOutputStream.write(payload);
-
-        dataOutputStream.flush();
+        //dataOutputStream.writeInt(length);
+        ByteBuffer buffer = ByteBuffer.allocate(1 + 4 + payload.length);
+        buffer.putInt(length);
+        //dataOutputStream.writeByte(type);
+        buffer.put(type);
+        if (payload != null) {
+            //dataOutputStream.write(payload);
+            buffer.put(payload);
+        }
+        //dataOutputStream.flush();
+        Charset charset = Charset.forName("US-ASCII");
+        System.out.println("Serialized message" + charset.decode(buffer).toString());
+        output.write(charset.decode(buffer).toString());
+        output.newLine();
+        output.flush();
     }
 
     // public static Message deserialize(InputStream in, int senderID, int
