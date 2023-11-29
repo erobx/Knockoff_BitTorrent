@@ -72,24 +72,29 @@ public abstract class Message implements Serializable {
     // Serializes messages and sends to output stream
     // TODO this isn't being picked up by the input stream
     public void serialize(OutputStream out) throws IOException {
+        System.out.println("SERIALIZING A MESSAGE");
+        System.out.println("HELP ME");
         // DataOutputStream dataOutputStream = new DataOutputStream(out);
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(out));
 
         //dataOutputStream.writeInt(length);
         ByteBuffer buffer = ByteBuffer.allocate(1 + 4 + payload.length);
+        System.out.println("Buffer Length: " + buffer);
         buffer.putInt(length);
+        System.out.println("Length: " + length);
         //dataOutputStream.writeByte(type);
         buffer.put(type);
+        System.out.println("Type: " + type);
         if (payload != null) {
             //dataOutputStream.write(payload);
             buffer.put(payload);
+            System.out.println("Payload: " + payload);
         }
         //dataOutputStream.flush();
         Charset charset = Charset.forName("US-ASCII");
-        System.out.println("Serialized message" + charset.decode(buffer).toString());
+        System.out.println("Serialized message: " + charset.decode(buffer).toString() + ".");
         output.write(charset.decode(buffer).toString());
-        output.newLine();
-        output.flush();
+        output.flush(); 
     }
 
     // public static Message deserialize(InputStream in, int senderID, int
