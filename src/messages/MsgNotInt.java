@@ -11,9 +11,14 @@ public class MsgNotInt extends Message {
     // TODO Fully implement
     @Override
     public void handle() {
-        System.out.println("NOT_INTERESTED message received from" + senderID + " at " + receiverID);
+        String logMessage = String.format("NOT_INTERESTED message received from %s at %s", senderID, receiverID);
+        System.out.println(logMessage);
 
-        Peer.peers.get(senderID).peerInterested = false;
+        setPeerInterested(senderID, false);
+    }
+
+    private void setPeerInterested(int senderID, boolean isInterested) {
+        Peer.peers.get(senderID).peerInterested = isInterested;
     }
 
 }

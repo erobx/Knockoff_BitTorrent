@@ -17,18 +17,24 @@ public class MsgHave extends Message {
     // TODO Debug
     @Override
     public void handle() {
-        System.out.println("HAVE message received from" + senderID + " at " + receiverID);
+        String logMessage = String.format("HAVE message received from %s at %s", senderID, receiverID);
+        System.out.println(logMessage);
 
-        Neighbor neighborPeer = Peer.peers.get(this.senderID);
+        Neighbor neighborPeer = Peer.peers.get(senderID);
+        updateNeighborBitfield(neighborPeer.bitfield);
+        checkAndUpdatePeerCompletion(neighborPeer);
+    }
 
-        // set the bitfield of the neighbor
-        Bitfield senderBitfield = neighborPeer.bitfield;
-        senderBitfield.setPiece(pieceIndex, true);
+    private void updateNeighborBitfield(Bitfield bitfield) {
+        bitfield.setPiece(pieceIndex, true);
+    }
 
-        // check if the sending peer has all the pieces
-        if (senderBitfield.isFull()) {
+    private void checkAndUpdatePeerCompletion(Neighbor neighbor) {
+        Bitfield neighborBitfield = neighbor.bitfield;
+
+        if (neighborBitfield.isFull()) {
             Peer.unfinishedPeers--;
-            neighborPeer.isDone = true;
+            neighbor.isDone = true;
         }
     }
 

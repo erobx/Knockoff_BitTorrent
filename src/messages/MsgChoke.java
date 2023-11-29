@@ -14,10 +14,15 @@ public class MsgChoke extends Message {
     // TODO Fully implement
     @Override
     public void handle() {
-        System.out.println("CHOKE message received from" + senderID + " at " + receiverID);
+        String logMessage = String.format("CHOKE message received from %s at %s", senderID, receiverID);
+        System.out.println(logMessage);
 
         Neighbor chokedNeighbor = Peer.peers.get(senderID);
-        chokedNeighbor.peerChoking = true; // the peer that sent us the message is letting us know they are choking us
+        setPeerChoking(chokedNeighbor, true);
+    }
+
+    private void setPeerChoking(Neighbor neighbor, boolean isChoking) {
+        neighbor.peerChoking = isChoking;
     }
 
 }

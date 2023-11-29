@@ -17,26 +17,36 @@ public class MsgUnchoke extends Message {
     // TODO Debug and add logging
     @Override
     public void handle() throws IOException {
-        System.out.println("UNCHOKE message received from" + senderID + " at " + receiverID);
+        System.out.println("UNCHOKE message received from " + senderID + " at " + receiverID);
 
-        Neighbor unchokingPeer = Peer.peers.get(this.senderID);
+        Neighbor unchokingPeer = Peer.peers.get(senderID);
+
         unchokingPeer.peerChoking = true;
 
+        // Check if the unchoking peer is interested
         if (unchokingPeer.interested) {
+            // If interested, determine the next piece to request
+
             Bitfield unchokingBitfield = unchokingPeer.bitfield;
             Bitfield myBitfield = Peer.bitfield;
 
             Random random = new Random();
 
-            // get the next piece randomly
-            int pieceIndex = random.nextInt(Peer.numPieces);
-            while (!(unchokingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
-                pieceIndex = random.nextInt(Peer.numPieces);
-            }
+            int pieceIndex = getRandomUnownedPieceIndex(unchokingBitfield, myBitfield, random);
 
             sendMessage(MessageType.REQUEST, senderID, receiverID, intToByteArray(pieceIndex));
-
         }
+    }
+
+    private int getRandomUnownedPieceIndex(Bitfield peerBitfield, Bitfield myBitfield, Random random) {
+        int pieceIndex = random.nextInt(Peer.numPieces);
+
+        // Keep selecting a random piece index until it is unowned by the receiving peer
+        while (!(peerBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
+            pieceIndex = random.nextInt(Peer.numPieces);
+        }
+
+        return pieceIndex;
     }
 
 }

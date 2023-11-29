@@ -18,17 +18,20 @@ public class MsgRequest extends Message {
     // TODO Fully implement
     @Override
     public void handle() throws IOException {
-        System.out.println("REQUEST message received from" + senderID + " at " + receiverID);
+        System.out.println("REQUEST message received from " + senderID + " at " + receiverID);
 
-        Neighbor peer = Peer.peers.get(this.senderID);
+        // Get information about the requesting peer and the local bitfield
+        Neighbor requestingPeer = Peer.peers.get(senderID);
         Bitfield myBitfield = Peer.bitfield;
 
-        if (!peer.choking && myBitfield.hasPiece(pieceIndex)) {
-            // if we're not choking them and have the requested piece, send it
+        // Check if the requesting peer is not choking and the requested piece is
+        // available
+        if (!requestingPeer.choking && myBitfield.hasPiece(pieceIndex)) {
+            // If conditions are met, send the requested piece to the requesting peer
 
             byte[] piecePayload = createPiecePayload(pieceIndex, loadPiece(pieceIndex, senderID));
-            Message.sendMessage(MessageType.PIECE, senderID, receiverID, piecePayload);
 
+            Message.sendMessage(MessageType.PIECE, senderID, receiverID, piecePayload);
         }
     }
 

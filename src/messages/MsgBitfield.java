@@ -20,30 +20,27 @@ public class MsgBitfield extends Message {
     // TODO Debug and add logging
     @Override
     public void handle() throws IOException {
-        System.out.println("BITFIELD message received from" + senderID + " at " + receiverID + " : "
-                + Arrays.toString(receivedBitfield.getBitfield()));
+        String message = String.format("BITFIELD message received from %s at %s: %s",
+                senderID, receiverID, Arrays.toString(receivedBitfield.getBitfield()));
+        System.out.println(message);
 
-        // check if bitfield has the pieces that receiver wants
-
+        // Check if bitfield has the pieces that receiver wants
         Bitfield myBitfield = Peer.bitfield;
+        boolean interested = hasInterestingPieces(myBitfield);
 
-        boolean interested = false;
+        MessageType messageType = interested ? MessageType.INTERESTED : MessageType.NOT_INTERESTED;
 
+        // Swap senderID and receiverID for the message
+        Message.sendMessage(messageType, senderID, receiverID, null);
+    }
+
+    private boolean hasInterestingPieces(Bitfield myBitfield) {
         for (int i = 0; i < Peer.numPieces; i++) {
             if (receivedBitfield.hasPiece(i) && !myBitfield.hasPiece(i)) {
-                interested = true;
+                return true;
             }
         }
-
-        if (interested) { // send interested
-            // receive/sender id swapped because receive is this peer and we want that to
-            // send the message
-            Message.sendMessage(MessageType.INTERESTED, senderID, receiverID, null);
-        } else { // send not interested
-            // receive/sender id swapped because receive is this peer and we want that to
-            // send the message
-            Message.sendMessage(MessageType.NOT_INTERESTED, senderID, receiverID, null);
-        }
+        return false;
     }
 
 }
