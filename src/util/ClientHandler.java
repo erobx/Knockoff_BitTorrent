@@ -50,6 +50,10 @@ public class ClientHandler extends Thread {
         }
     }
 
+    public Peer getPeer() {
+        return thisPeer;
+    }
+
     public Socket getSocket() {
         return clientSocket;
     }

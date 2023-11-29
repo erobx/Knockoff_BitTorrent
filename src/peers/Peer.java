@@ -37,7 +37,7 @@ public class Peer {
 
     public static Bitfield bitfield;
     public static int unfinishedPeers;
-    private Vector<Neighbor> peers = new Vector<>();
+    public static HashMap<Integer, Neighbor> peers = new HashMap<Integer, Neighbor>();
     public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
     private int[] prefPeers;
@@ -116,14 +116,14 @@ public class Peer {
             // check if enough time has passed for preferedNeighbors
             if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
                 // System.out.println("Updating preferred neighbors");
-                updatePreferred(); // TODO
+                updatePreferred();
                 lastPreferredUpdateTime = System.currentTimeMillis();
             }
 
             // check if enough time has passed for optimistically unchoked
             if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
                 // System.out.println("Updating optimistically-unchoked neighbor");
-                updateOptimisticUnchoke(); // TODO
+                updateOptimisticUnchoke();
                 lastOpUnchokeUpdateTime = System.currentTimeMillis();
             }
 
@@ -140,14 +140,6 @@ public class Peer {
         System.out.println("Closing");
 
         // Close connections
-
-    }
-
-    private void updatePreferred() {
-
-    }
-
-    private void updateOptimisticUnchoke() {
 
     }
 
@@ -235,7 +227,7 @@ public class Peer {
                     this.validPeerID = true;
                     break;
                 }
-                peers.addElement(new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
+                peers.put(peerID, new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
             }
             in.close();
 
@@ -250,9 +242,10 @@ public class Peer {
 
     // Method to connect to peers before
     private void createClients() {
-        for (Neighbor neighbor : peers) {
+        for (Map.Entry<Integer, Neighbor> entry : peers.entrySet()) {
             Socket clientSocket;
             try {
+                Neighbor neighbor = entry.getValue();
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
 
                 // Send handshake
@@ -271,7 +264,9 @@ public class Peer {
                 ch.setDaemon(true);
                 ch.start();
 
-                Message.sendMessage(MessageType.BITFIELD, neighbor.peerID, this.peerID, bitfield.getBitfield());
+                if (!bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
+                    Message.sendMessage(MessageType.BITFIELD, neighbor.peerID, this.peerID, bitfield.getBitfield());
+                }
 
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
@@ -281,8 +276,157 @@ public class Peer {
         }
     }
 
+    private void updatePreferred() throws IOException {
+        // Determine preferred peers to unchoke based on download progress
+        if (!hasFile) {
+            // Create a priority queue to store interested peers
+            PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
+
+            // Iterate over all peers to identify interested ones
+            for (Neighbor peer : peers.values()) {
+                if (peer != null) {
+                    if (peer.peerInterested) {
+                        interestedPeersQueue.add(peer);
+                    }
+                    // Reset dataRate for each peer
+                    peer.dataRate = 0;
+                }
+            }
+
+            // Unchoke the top number of prefered interested peers
+            for (int i = 0; i < numPrefNeighbors; i++) {
+                Neighbor preferredPeer = interestedPeersQueue.poll();
+                if (preferredPeer != null) {
+                    prefPeers[i] = preferredPeer.peerID;
+                    unchoke(preferredPeer.peerID);
+                } else {
+                    System.err.println("Error! Trying to add an unconnected peer to preferred peers");
+                }
+            }
+
+            // Choke all remaining interested peers
+            while (interestedPeersQueue.peek() != null) {
+                Neighbor chokedPeer = interestedPeersQueue.poll();
+                if (chokedPeer != null) {
+                    choke(chokedPeer.peerID);
+                } else {
+                    System.err.println("Error! Trying to choke an unconnected peer");
+                }
+            }
+        } else {
+            // The peer has downloaded the whole file
+            Random rand = new Random();
+            Integer[] peerIDs = new Integer[peers.size()];
+            peerIDs = peers.keySet().toArray(peerIDs);
+            knuthShuffle(peerIDs);
+
+            int nPrefDex = 0;
+
+            // Iterate over all peers to unchoke preferred ones randomly
+            for (int i = 0; i < peerIDs.length; i++) {
+                Neighbor peer = peers.get(peerIDs[i]);
+                if (peer != null) {
+                    if (peer.peerInterested && nPrefDex < prefPeers.length) {
+                        prefPeers[nPrefDex++] = peer.peerID;
+                        unchoke(peer.peerID);
+                        break;
+                    } else {
+                        // Choke all remaining peers
+                        choke(peer.peerID);
+                    }
+                    // Reset dataRate for each peer
+                    peer.dataRate = 0;
+                } else {
+                    System.err.println("Error! Unconnected peer");
+                }
+            }
+        }
+
+    }
+
+    public static void knuthShuffle(Integer[] array) {
+        Random rand = new Random();
+
+        for (int i = array.length - 1; i > 0; i--) {
+            int j = rand.nextInt(i + 1);
+
+            // Swap array[i] and array[j]
+            Integer temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
+    public void choke(int receiverID) throws IOException {
+        /*
+         * Chokes the specified PeerID:
+         * - Updates choked status of the appropriate NeighborPeer
+         * - Sends a choked message to the appropriate peer
+         */
+
+        // Retrieve the NeighborPeer corresponding to the specified receiverID
+        Neighbor toChoke = peers.get(receiverID);
+
+        // If not yet connected to this peer, return
+        if (!toChoke.connected) {
+            return;
+        }
+
+        // Update the choked status of the NeighborPeer
+        toChoke.choking = true;
+
+        // Create and send a Choke message
+        Message.sendMessage(MessageType.CHOKE, receiverID, peerID, null);
+
+        System.out.println("Choking " + receiverID);
+    }
+
+    public void unchoke(int receiverID) throws IOException {
+        /*
+         * Unchokes the specified PeerID:
+         * - Updates the choked status of the appropriate NeighborPeer
+         * - Sends an unchoke message to the appropriate peer
+         */
+
+        // Retrieve the NeighborPeer corresponding to the specified receiverID
+        Neighbor toUnchoke = peers.get(receiverID);
+
+        // Update the choked status of the NeighborPeer
+        toUnchoke.choking = false;
+
+        // Create and send an Unchoke message
+        Message.sendMessage(MessageType.UNCHOKE, receiverID, peerID, null);
+    }
+
+    public void optimisticUnchoke() throws IOException {
+        /*
+         * Select a random peer from choked peers interested in your data;
+         * unchoke them (send them an unchoke message, mark them as unchoked).
+         * Choke the peer that was previously optimistically unchoked.
+         */
+
+        // Get a random order of peer IDs
+        Random rand = new Random();
+        Integer[] peerIDs = new Integer[peers.size()];
+        peerIDs = peers.keySet().toArray(peerIDs);
+        knuthShuffle(peerIDs);
+
+        // Iterate over shuffled peer IDs to find a choked, interested peer
+        for (int i = 0; i < peerIDs.length; i++) {
+            Neighbor peer = peers.get(peerIDs[i]);
+            if (peer.peerInterested && peer.choking) {
+
+                // Unchoke the selected peer and log the change
+                optUnchokedPeer = peerIDs[i];
+                unchoke(optUnchokedPeer);
+
+                System.out.println("Optimistically unchoking peer: " + optUnchokedPeer);
+                break;
+            }
+        }
+    }
+
     public void addToMessageQueue(byte[] msg, int peerID) {
         messageQueue.add(new MessageObj(msg, peerID));
     }
-
 }

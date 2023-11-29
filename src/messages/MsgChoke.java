@@ -2,18 +2,27 @@ package messages;
 
 import java.util.Arrays;
 
+import peers.Neighbor;
+import peers.Peer;
+
 public class MsgChoke extends Message {
 
     public MsgChoke(int length, byte type, byte[] payload, int senderID, int receiverID) {
         super(length, type, payload, senderID, receiverID);
-        // TODO Auto-generated constructor stub
     }
 
     // TODO Fully implement
     @Override
     public void handle() {
-        System.out.println("CHOKE message received from" + senderID + " at " + receiverID);
+        String logMessage = String.format("CHOKE message received from %s at %s", senderID, receiverID);
+        System.out.println(logMessage);
 
+        Neighbor chokedNeighbor = Peer.peers.get(senderID);
+        setPeerChoking(chokedNeighbor, true);
+    }
+
+    private void setPeerChoking(Neighbor neighbor, boolean isChoking) {
+        neighbor.peerChoking = isChoking;
     }
 
 }

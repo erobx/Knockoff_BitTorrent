@@ -1,17 +1,41 @@
 package messages;
 
+import peers.Neighbor;
+import peers.Peer;
+import util.Bitfield;
+
 public class MsgHave extends Message {
+
+    private int pieceIndex;
 
     public MsgHave(int length, byte type, byte[] payload, int senderID, int receiverID) {
         super(length, type, payload, senderID, receiverID);
-        // TODO Auto-generated constructor stub
+
+        this.pieceIndex = Message.byteArrayToInt(payload);
     }
 
-    // TODO Fully implement
+    // TODO Debug
     @Override
     public void handle() {
-        System.out.println("HAVE message received from" + senderID + " at " + receiverID);
+        String logMessage = String.format("HAVE message received from %s at %s", senderID, receiverID);
+        System.out.println(logMessage);
 
+        Neighbor neighborPeer = Peer.peers.get(senderID);
+        updateNeighborBitfield(neighborPeer.bitfield);
+        checkAndUpdatePeerCompletion(neighborPeer);
+    }
+
+    private void updateNeighborBitfield(Bitfield bitfield) {
+        bitfield.setPiece(pieceIndex, true);
+    }
+
+    private void checkAndUpdatePeerCompletion(Neighbor neighbor) {
+        Bitfield neighborBitfield = neighbor.bitfield;
+
+        if (neighborBitfield.isFull()) {
+            Peer.unfinishedPeers--;
+            neighbor.isDone = true;
+        }
     }
 
 }
