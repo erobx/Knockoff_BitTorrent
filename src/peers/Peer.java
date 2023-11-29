@@ -37,7 +37,7 @@ public class Peer {
 
     public static Bitfield bitfield;
     public static int unfinishedPeers;
-    private Vector<Neighbor> peers = new Vector<>();
+    public static HashMap<Integer, Neighbor> peers = new HashMap<Integer, Neighbor>();
     public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
     private int[] prefPeers;
@@ -235,7 +235,7 @@ public class Peer {
                     this.validPeerID = true;
                     break;
                 }
-                peers.addElement(new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
+                peers.put(peerID, new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
             }
             in.close();
 
@@ -250,9 +250,10 @@ public class Peer {
 
     // Method to connect to peers before
     private void createClients() {
-        for (Neighbor neighbor : peers) {
+        for (Map.Entry<Integer, Neighbor> entry : peers.entrySet()) {
             Socket clientSocket;
             try {
+                Neighbor neighbor = entry.getValue();
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
 
                 // Send handshake
@@ -272,7 +273,9 @@ public class Peer {
                 ch.setDaemon(true);
                 ch.start();
 
-                Message.sendMessage(MessageType.BITFIELD, neighbor.peerID, this.peerID, bitfield.getBitfield());
+                if (!bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
+                    Message.sendMessage(MessageType.BITFIELD, neighbor.peerID, this.peerID, bitfield.getBitfield());
+                }
 
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
@@ -285,5 +288,4 @@ public class Peer {
     public void addToMessageQueue(byte[] msg, int peerID) {
         messageQueue.add(new MessageObj(msg, peerID));
     }
-
 }
