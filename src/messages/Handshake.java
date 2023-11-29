@@ -75,9 +75,6 @@ public class Handshake implements Serializable {
     public static void clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
         sendHandshake(out, senderID, receiverID);
         Handshake serverHandshake = receiveHandshake(in, senderID);
-
-        System.out.println(serverHandshake.getReceiverID());
-        System.out.println(receiverID);
         
         if (serverHandshake.getSenderID() == receiverID) {
             System.out.println("Server handshake accepted from " + serverHandshake.getSenderID());
