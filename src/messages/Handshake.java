@@ -99,7 +99,7 @@ public class Handshake implements Serializable {
     public static Handshake receiveHandshake(InputStream in, int senderPID) {
         try {
             Handshake msg = Handshake.deserialize(in, senderPID);
-            System.out.println("Receiving handshake from " + msg.getReceiverID());
+            System.out.println("Receiving handshake from " + msg.getSenderID());
             return msg;
         } catch (IOException ex) {
             ex.printStackTrace();
