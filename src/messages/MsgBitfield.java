@@ -19,9 +19,9 @@ public class MsgBitfield extends Message {
     // TODO Fully implement
     @Override
     public void handle() {
-        System.out.println("BITFIELD message received from" + senderID + " at " + receiverID + " : "
+        System.out.println("BITFIELD message received from " + senderID + " at " + receiverID + " : "
                 + Arrays.toString(bitfield.getBitfield()));
-
+        // System.out.println("BITFIELD message received from " + senderID + " at " + receiverID);
     }
 
 }

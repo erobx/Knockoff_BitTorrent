@@ -30,15 +30,12 @@ public class Server extends Thread {
                 // Wait for handshake
                 int senderID = -1;
                 try {
-                    // BufferedReader in = new BufferedReader(new InputStreamReader(
-                    // clientSocket.getInputStream()));
                     senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
 
                 // Create new ClientHandler
-                // TODO ask about this
                 ClientHandler ch = new ClientHandler(clientSocket, senderID, peer);
                 Peer.clients.put(senderID, ch);
 

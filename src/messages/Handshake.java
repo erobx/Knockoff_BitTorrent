@@ -62,7 +62,7 @@ public class Handshake implements Serializable {
     public static int serverHandshake(InputStream in, OutputStream out, int senderPID) { 
         Handshake clientHandshake = receiveHandshake(in, senderPID);
         if (clientHandshake.header.equals("P2PFILESHARINGPROJ")) {
-            System.out.println("Client Handshake received from " + clientHandshake.senderPID);
+            // System.out.println("Client Handshake received from " + clientHandshake.senderPID);
             sendHandshake(out, senderPID, clientHandshake.senderPID);
             return clientHandshake.senderPID;
         }
@@ -77,7 +77,7 @@ public class Handshake implements Serializable {
         Handshake serverHandshake = receiveHandshake(in, senderID);
         
         if (serverHandshake.getSenderID() == receiverID) {
-            System.out.println("Server handshake accepted from " + serverHandshake.getSenderID());
+            // System.out.println("Server handshake accepted from " + serverHandshake.getSenderID());
         }
         else {
             System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID );
@@ -90,7 +90,7 @@ public class Handshake implements Serializable {
         try {
             Handshake msg = new Handshake("P2PFILESHARINGPROJ", senderPID, receiverPID);
             msg.serialize(out);
-            System.out.println("Sending handshake to " + receiverPID);
+            // System.out.println("Sending handshake to " + receiverPID);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -99,7 +99,7 @@ public class Handshake implements Serializable {
     public static Handshake receiveHandshake(InputStream in, int senderPID) {
         try {
             Handshake msg = Handshake.deserialize(in, senderPID);
-            System.out.println("Receiving handshake from " + msg.getSenderID());
+            // System.out.println("Receiving handshake from " + msg.getSenderID());
             return msg;
         } catch (IOException ex) {
             ex.printStackTrace();

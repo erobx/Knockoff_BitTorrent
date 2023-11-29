@@ -115,14 +115,14 @@ public class Peer {
 
             // check if enough time has passed for preferedNeighbors
             if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
-                System.out.println("Updating preferred neighbors");
+                // System.out.println("Updating preferred neighbors");
                 updatePreferred(); // TODO
                 lastPreferredUpdateTime = System.currentTimeMillis();
             }
 
             // check if enough time has passed for optimistically unchoked
             if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
-                System.out.println("Updating optimistically-unchoked neighbor");
+                // System.out.println("Updating optimistically-unchoked neighbor");
                 updateOptimisticUnchoke(); // TODO
                 lastOpUnchokeUpdateTime = System.currentTimeMillis();
             }
