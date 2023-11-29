@@ -1,15 +1,32 @@
 package messages;
 
 import java.io.*;
+import java.security.SecureRandom;
+
+import javax.sound.midi.Receiver;
 
 public class Handshake implements Serializable {
     private String header;
     private byte[] zeros = new byte[10];
-    private int peerID;
+    private int senderPID;
+    private int receiverPID;
 
-    public Handshake(String header, int peerID) {
+    public Handshake(String header, int senderPID, int receiverPID) {
         this.header = header;
-        this.peerID = peerID;
+        this.senderPID = senderPID;
+        this.receiverPID = receiverPID;
+    }
+
+    public String getHeader() {
+        return header;
+    }
+
+    public int getReceiverID() {
+        return receiverPID;
+    }
+
+    public int getSenderID() {
+        return senderPID;
     }
 
     public void serialize(OutputStream out) throws IOException {
@@ -18,29 +35,21 @@ public class Handshake implements Serializable {
 
         dataOutputStream.writeUTF(header);
         dataOutputStream.write(zeros);
-        dataOutputStream.writeInt(peerID);
+        dataOutputStream.writeInt(senderPID);
 
         dataOutputStream.flush();
     }
 
-    public static Handshake deserialize(InputStream in) throws IOException {
+    public static Handshake deserialize(InputStream in, int senderPID) throws IOException {
         DataInputStream dataInputStream = new DataInputStream(in);
 
         String header = dataInputStream.readUTF();
         byte[] zeros = new byte[10];
         dataInputStream.readFully(zeros);
-        int peerID = dataInputStream.readInt();
+        int receiverID = dataInputStream.readInt();
 
-        Handshake msg = new Handshake(header, peerID);
+        Handshake msg = new Handshake(header, receiverID, senderPID);
         return msg;
-    }
-
-    public String getHeader() {
-        return header;
-    }
-
-    public int getID() {
-        return peerID;
     }
 
     /**
@@ -50,50 +59,51 @@ public class Handshake implements Serializable {
      * @param peerID
      * @return peerID of accecpted handshake or -1 if invalid handshake;
      */
-    public static int serverHandshake(InputStream in, OutputStream out) { 
-        Result result = receiveHandshake(in);
-            if (result.valid) {
-                System.out.println("Peer " + result.peerID + ": handshake accepted.");
-                sendHandshake(out, result.peerID);
-                return result.peerID;
-            }
-            else{
-                System.out.println("Handshake invalid");
-                return -1;
-            }
+    public static int serverHandshake(InputStream in, OutputStream out, int senderPID) { 
+        Handshake clientHandshake = receiveHandshake(in, senderPID);
+        if (clientHandshake.header.equals("P2PFILESHARINGPROJ")) {
+            System.out.println("Client Handshake received from " + clientHandshake.senderPID);
+            sendHandshake(out, senderPID, clientHandshake.senderPID);
+            return clientHandshake.senderPID;
+        }
+        else{
+            System.out.println("Handshake invalid");
+            return -1;
+        }
     }
 
-    public static void clientHandshake(InputStream in, OutputStream out, int peerID) {
-        sendHandshake(out, peerID);
-        Result result = receiveHandshake(in);
-        if (result.isValid()) {
-            System.out.println("Peer " + result.getPeerID() + ": handshake accepted.");
+    public static void clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
+        sendHandshake(out, senderID, receiverID);
+        Handshake serverHandshake = receiveHandshake(in, senderID);
+
+        System.out.println(serverHandshake.getReceiverID());
+        System.out.println(receiverID);
+        
+        if (serverHandshake.getSenderID() == receiverID) {
+            System.out.println("Server handshake accepted from " + serverHandshake.getSenderID());
+        }
+        else {
+            System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID );
         }
     }
 
 
 
-    public static void sendHandshake(OutputStream out, int id) {
+    public static void sendHandshake(OutputStream out, int senderPID, int receiverPID) {
         try {
-            Handshake msg = new Handshake("P2PFILESHARINGPROJ", id);
+            Handshake msg = new Handshake("P2PFILESHARINGPROJ", senderPID, receiverPID);
             msg.serialize(out);
-            System.out.println("Sending handshake");
+            System.out.println("Sending handshake to " + receiverPID);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
-    public static Result receiveHandshake(InputStream in) {
+    public static Handshake receiveHandshake(InputStream in, int senderPID) {
         try {
-            System.out.println("Receiving handshake");
-            Handshake msg = Handshake.deserialize(in);
-            String header = msg.getHeader();
-            int peerID = msg.getID();
-
-            if (header.equals("P2PFILESHARINGPROJ")) {
-                Result result = msg.new Result(true, peerID);
-                return result;
-            }
+            Handshake msg = Handshake.deserialize(in, senderPID);
+            System.out.println("Receiving handshake from " + msg.getReceiverID());
+            return msg;
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -102,19 +112,14 @@ public class Handshake implements Serializable {
 
     public class Result {
         boolean valid;
-        int peerID;
+        int senderPID;
+        int receiverPID;
 
-        public Result(boolean valid, int peerID) {
+        public Result(boolean valid, int senderPID, int receiverPID) {
             this.valid = valid;
-            this.peerID = peerID;
+            this.senderPID = senderPID;
+            this.receiverPID = receiverPID;
         }
-
-        public boolean isValid(){
-            return valid;
-        }
-
-        public int getPeerID(){
-            return peerID;
-        }
+        
     }
 }

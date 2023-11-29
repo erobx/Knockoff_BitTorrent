@@ -68,7 +68,7 @@ public class Peer {
     // Temporary Stuff for testing
     private void timeout() {
 
-        long TimeoutValue = 30; // 30 seconds
+        long TimeoutValue = 100; // 30 seconds
 
         System.out.println((System.currentTimeMillis() - lastTimeoutCheck) / 1000);
 
@@ -85,7 +85,7 @@ public class Peer {
         bitfield = new Bitfield(numPieces, hasFile);
 
         // Create server
-        server = new Server(port);
+        server = new Server(port, peerID, this);
         server.setDaemon(true);
         server.start();
 
@@ -257,8 +257,7 @@ public class Peer {
 
                 // Send handshake
                 try {
-                    // PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
+                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID, neighbor.peerID);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
