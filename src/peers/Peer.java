@@ -123,7 +123,6 @@ public class Peer {
             // check if enough time has passed for optimistically unchoked
             if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
                 // System.out.println("Updating optimistically-unchoked neighbor");
-                updateOptimisticUnchoke();
                 lastOpUnchokeUpdateTime = System.currentTimeMillis();
             }
 
