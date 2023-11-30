@@ -68,7 +68,7 @@ public class Peer {
     // Temporary Stuff for testing
     private void timeout() {
 
-        long TimeoutValue = 100; // 30 seconds
+        long TimeoutValue = 30; // 30 seconds
 
         System.out.println((System.currentTimeMillis() - lastTimeoutCheck) / 1000);
 
@@ -132,7 +132,25 @@ public class Peer {
                 int senderID = messageObj.senderID;
 
                 Message m = Message.getMessage(messageBytes, senderID, peerID);
-                m.handle(); // will handle based on what message it is
+                try {
+                    m.handle(); // will handle based on what message it is
+                } catch (Exception e) {
+                    StackTraceElement[] stackTrace = e.getStackTrace();
+                    if (stackTrace.length > 0) {
+                        StackTraceElement topFrame = stackTrace[0];
+                        String className = topFrame.getClassName();
+                        String methodName = topFrame.getMethodName();
+                        String fileName = topFrame.getFileName();
+                        int lineNumber = topFrame.getLineNumber();
+
+                        System.out.println("Exception in " + className + "." + methodName +
+                                " (" + fileName + ":" + lineNumber + "): " + e);
+                    } else {
+                        // Handle the case where the stack trace is empty
+                        System.out.println("Exception: " + e);
+                    }
+                }
+
             }
         }
 
@@ -249,7 +267,8 @@ public class Peer {
 
                 // Send handshake
                 try {
-                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID, neighbor.peerID);
+                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID,
+                            neighbor.peerID);
 
                 } catch (IOException ex) {
                     ex.printStackTrace();

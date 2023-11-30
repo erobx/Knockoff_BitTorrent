@@ -78,14 +78,14 @@ public abstract class Message implements Serializable {
     public void serialize(OutputStream out) throws IOException {
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(out));
 
-        ByteBuffer buffer = ByteBuffer.allocate(4 + 1 + payload.length);
+        ByteBuffer buffer = ByteBuffer.allocate(4 + 1 + length);
 
         buffer.putInt(length);
-      
+
         buffer.put(type);
 
         if (payload != null) {
-            buffer.put(payload);
+            buffer.put(payload, 0, payload.length);
         }
 
         output.write(new String(buffer.array()));
@@ -140,7 +140,6 @@ public abstract class Message implements Serializable {
     // return byteArrayToInt();
     // }
 
-
     public static Message getMessage(byte[] messageBytes, int senderID, int receiverID) {
         try {
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
@@ -153,7 +152,7 @@ public abstract class Message implements Serializable {
             byte type = dataInputStream.readByte();
 
             // Read the rest of the bytes as payload
-            byte[] payload = new byte[length - 1]; // subtract 1 for the byte (type)
+            byte[] payload = new byte[length];
 
             try {
                 dataInputStream.readFully(payload);
@@ -205,72 +204,65 @@ public abstract class Message implements Serializable {
         return null;
     }
 
-    public static void sendMessage(Message.MessageType type, int senderID2, int receiverID2, byte[] payload)
+    public static void sendMessage(Message.MessageType type, int senderID, int receiverID, byte[] payload)
             throws IOException {
-        util.ClientHandler ch = Peer.clients.get(senderID2);
+        util.ClientHandler ch = Peer.clients.get(senderID);
         if (ch == null) {
             throw new RuntimeException("Client receiver ID Cannot be found");
         }
 
         Message msg = null;
-        String msgType = "";
+
+        int length = 0;
+
+        if (payload != null) {
+            length = payload.length;
+        }
 
         // TODO check if parameters are correct
         switch (type) {
             // Choke - no payload
-            case CHOKE -> {
-                int length = 0; // no payload
-                msg = new MsgChoke(length + 1, (byte) type.getValue(), null, receiverID2,
-                        senderID2);
-            }
+            case CHOKE ->
+                msg = new MsgChoke(0, (byte) type.getValue(), null, receiverID,
+                        senderID);
             // Unchoke - no payload
-            case UNCHOKE -> {
-                int length = 0; // no payload
-                msg = new MsgUnchoke(length + 1, (byte) type.getValue(), null, receiverID2,
-                        senderID2);
-            }
+            case UNCHOKE ->
+                msg = new MsgUnchoke(0, (byte) type.getValue(), null, receiverID,
+                        senderID);
+
             // Interested - no payload
-            case INTERESTED -> {
-                int length = 0; // no payload
-                msg = new MsgInt(length + 1, (byte) type.getValue(), null, receiverID2,
-                        senderID2);
-            }
+            case INTERESTED ->
+                msg = new MsgInt(0, (byte) type.getValue(), null, receiverID,
+                        senderID);
             // Not interested - no payload
-            case NOT_INTERESTED -> {
-                int length = 0; // no payload
-                msg = new MsgNotInt(length + 1, (byte) type.getValue(), null, receiverID2,
-                        senderID2);
-            }
+            case NOT_INTERESTED ->
+                msg = new MsgNotInt(0, (byte) type.getValue(), null, receiverID,
+                        senderID);
+
             // Have - index payload TODO adjust payload
-            case HAVE -> {
-                int length = 0; // no payload
-                msg = new MsgHave(length + 1, (byte) type.getValue(), null, receiverID2,
-                        senderID2);
-            }
+            case HAVE ->
+                msg = new MsgHave(0, (byte) type.getValue(), null, receiverID,
+                        senderID);
             // Bitfield - bitfield payload
-            case BITFIELD -> {
-                int length = payload.length;
-                msg = new MsgBitfield(length + 1, (byte) type.getValue(), payload, receiverID2,
-                        senderID2);
-            }
+            case BITFIELD ->
+                msg = new MsgBitfield(length, (byte) type.getValue(), payload, receiverID,
+                        senderID);
+
             // Request - index payload TODO adjust payload and length
-            case REQUEST -> {
-                int length = payload.length;
-                msg = new MsgRequest(length + 1, (byte) type.getValue(), payload, receiverID2,
-                        senderID2);
-            }
+            case REQUEST ->
+                msg = new MsgRequest(length, (byte) type.getValue(), payload, receiverID,
+                        senderID);
             // Piece - index + piece payload TODO adjust payload and length
-            case PIECE -> {
-                int length = payload.length;
-                msg = new MsgPiece(length + 1, (byte) type.getValue(), payload, receiverID2,
-                        senderID2);
-            }
+            case PIECE ->
+                msg = new MsgPiece(length, (byte) type.getValue(), payload, receiverID,
+                        senderID);
         }
 
         // send msg if appropriate type is inputted
+
         if (msg != null) {
             msg.serialize(ch.getSocket().getOutputStream());
-            System.out.println(type.toString() + " message sent from " + receiverID2 + " to " + senderID2);
+            System.out.println(type.toString() + " message sent from " + receiverID + " to " + senderID);
         }
 
     }

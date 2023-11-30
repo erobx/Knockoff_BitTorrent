@@ -13,6 +13,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import peers.Neighbor;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -73,15 +76,15 @@ public class PeerLogger {
         logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pid1, pid2));
     }
 
-    public static void PrefNeighborMessage(String pid1, Vector<PeerInfo> preferredNeighbors) {
+    public static void PrefNeighborMessage(String pid1, Vector<Neighbor> preferredNeighbors) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
 
         String neighbors = "";
-        Iterator<PeerInfo> it = preferredNeighbors.iterator();
+        Iterator<Neighbor> it = preferredNeighbors.iterator();
         if (it.hasNext())
-            neighbors += it.next().pID;
+            neighbors += it.next().peerID;
         while (it.hasNext())
-            neighbors += ", " + it.next().pID;
+            neighbors += ", " + it.next().peerID;
 
         logger.log(Level.INFO, String.format("Peer %s has the preferred neighbors %s", pid1, neighbors));
     }

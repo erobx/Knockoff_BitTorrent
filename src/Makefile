@@ -1,5 +1,6 @@
 all:
 	javac peerProcess.java StartLocalPeers.java
+	javac util/*.java peers/*.java messages/*.java
 
 run:
 	java StartLocalPeers
