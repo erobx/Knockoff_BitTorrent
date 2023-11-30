@@ -3,7 +3,7 @@ package peers;
 import util.Bitfield;
 
 public class Neighbor {
-    final int peerID;
+    public final int peerID;
     public final String hostname;
     public final int port;
     public boolean hasFile;
