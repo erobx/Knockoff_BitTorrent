@@ -6,6 +6,7 @@ import java.util.Random;
 import peers.Neighbor;
 import peers.Peer;
 import util.Bitfield;
+import util.PeerLogger;
 
 public class MsgInt extends Message {
 
@@ -18,6 +19,9 @@ public class MsgInt extends Message {
     public void handle() throws IOException {
         String logMessage = String.format("INTERESTED message received from %s at %s", senderID, receiverID);
         System.out.println(logMessage);
+
+        PeerLogger.ReceiveInterestedMessage(receiverID, senderID);
+
         Neighbor sendingPeer = Peer.peers.get(senderID);
         setPeerChoking(sendingPeer, true);
 

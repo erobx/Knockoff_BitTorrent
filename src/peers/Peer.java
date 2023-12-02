@@ -9,6 +9,7 @@ import java.io.*;
 
 import util.Bitfield;
 import util.ClientHandler;
+import util.PeerLogger;
 import util.Server;
 import messages.Handshake;
 import messages.Message;
@@ -80,6 +81,8 @@ public class Peer {
     public void run() throws Exception {
         // Read config files
         readConfig();
+
+        PeerLogger.InitLog(peerID);
 
         // Init bitfield
         bitfield = new Bitfield(numPieces, hasFile);

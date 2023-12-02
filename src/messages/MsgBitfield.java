@@ -28,6 +28,8 @@ public class MsgBitfield extends Message {
         Bitfield myBitfield = Peer.bitfield;
         boolean interested = hasInterestingPieces(myBitfield);
 
+        Peer.peers.get(senderID).peerInterested = neighborIsInterested(myBitfield);
+
         MessageType messageType = interested ? MessageType.INTERESTED : MessageType.NOT_INTERESTED;
 
         // Swap senderID and receiverID for the message
@@ -37,6 +39,15 @@ public class MsgBitfield extends Message {
     private boolean hasInterestingPieces(Bitfield myBitfield) {
         for (int i = 0; i < Peer.numPieces; i++) {
             if (receivedBitfield.hasPiece(i) && !myBitfield.hasPiece(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean neighborIsInterested(Bitfield myBitfield) {
+        for (int i = 0; i < Peer.numPieces; i++) {
+            if (!receivedBitfield.hasPiece(i) && myBitfield.hasPiece(i)) {
                 return true;
             }
         }

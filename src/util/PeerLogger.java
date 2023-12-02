@@ -30,15 +30,32 @@ public class PeerLogger {
         }
     }
 
+    static String logsDirectory = ".";
+
     public static void ClearLogs() {
-        // Clear file contents of each log TODO
-        // or
-        // Delete all log files
+        try {
+            File directory = new File(logsDirectory);
+            File[] logFiles = directory.listFiles((dir, name) -> name.startsWith("log_peer_") && name.endsWith(".log"));
+
+            if (logFiles != null) {
+                for (File logFile : logFiles) {
+                    if (logFile.delete()) {
+                        System.out.println("Deleted log file: " + logFile.getName());
+                    } else {
+                        System.out.println("Failed to delete log file: " + logFile.getName());
+                    }
+                }
+            } else {
+                System.out.println("No log files found in the directory: " + logsDirectory);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void InitLog(String pid) {
+    public static void InitLog(int pid) {
         String logFileName = "log_peer_" + pid + ".log";
-        Path currentRelPath = Paths.get(".");
+        Path currentRelPath = Paths.get(logsDirectory);
         String path = currentRelPath.toAbsolutePath().toString();
 
         try {
@@ -66,17 +83,17 @@ public class PeerLogger {
         }
     }
 
-    public static void TCPSendMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s makes a connection to Peer %s", pid1, pid2));
+    public static void TCPSendMessage(int pSend, int pRecieve) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pSend);
+        logger.log(Level.INFO, String.format("Peer %s makes a connection to Peer %s", pSend, pRecieve));
     }
 
-    public static void TCPReceiveMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pid1, pid2));
+    public static void TCPReceiveMessage(int pSend, int pRecieve) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pSend);
+        logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pSend, pRecieve));
     }
 
-    public static void PrefNeighborMessage(String pid1, Vector<Neighbor> preferredNeighbors) {
+    public static void PrefNeighborMessage(int pid1, Vector<Neighbor> preferredNeighbors) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
 
         String neighbors = "";
@@ -89,44 +106,47 @@ public class PeerLogger {
         logger.log(Level.INFO, String.format("Peer %s has the preferred neighbors %s", pid1, neighbors));
     }
 
-    public static void OptUnchokeNeighborMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s has the optimistically unchoked neighbor %s", pid1, pid2));
+    public static void OptUnchokeNeighborMessage(int pid, int pidNeighbor) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid);
+        logger.log(Level.INFO, String.format("Peer %s has the optimistically unchoked neighbor %s", pid, pidNeighbor));
     }
 
-    public static void UnchokeMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s is unchoked by %s", pid1, pid2));
+    public static void UnchokeMessage(int pid, int pidNeighbor) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid);
+        logger.log(Level.INFO, String.format("Peer %s is unchoked by %s", pid, pidNeighbor));
     }
 
-    public static void ChokeMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s is choked by %s", pid1, pid2));
+    public static void ChokeMessage(int pid, int pidNeighbor) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid);
+        logger.log(Level.INFO, String.format("Peer %s is choked by %s", pid, pidNeighbor));
     }
 
-    public static void ReceiveHaveMessage(String pid1, String pid2, int pieceIndex) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
+    public static void ReceiveHaveMessage(int pidReceived, int pidSend, int pieceIndex) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pidReceived);
         logger.log(Level.INFO,
-                String.format("Peer %s received the 'have' message from %s for the piece %d", pid1, pid2, pieceIndex));
+                String.format("Peer %s received the 'have' message from %s for the piece %d", pidReceived, pidSend,
+                        pieceIndex));
     }
 
-    public static void ReceiveInterestedMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s received the 'interested' message from %s", pid1, pid2));
+    public static void ReceiveInterestedMessage(int pidReceived, int pidSend) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pidReceived);
+        logger.log(Level.INFO,
+                String.format("Peer %s received the 'interested' message from %s", pidReceived, pidSend));
     }
 
-    public static void ReceiveNotInterestedMessage(String pid1, String pid2) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s received the 'not interested' message from %s", pid1, pid2));
+    public static void ReceiveNotInterestedMessage(int pidReceived, int pidSend) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pidReceived);
+        logger.log(Level.INFO,
+                String.format("Peer %s received the 'not interested' message from %s", pidReceived, pidSend));
     }
 
-    public static void DownloadPieceMessage(String pid1, String pid2, int pieceIndex, int pieceCount) {
+    public static void DownloadPieceMessage(int pid1, int pid2, int pieceIndex, int pieceCount) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
         logger.log(Level.INFO, String.format("Peer %s has downloaded the piece %d from %s. Now the number" +
                 " of pieces it has is %d", pid1, pieceIndex, pid2, pieceCount));
     }
 
-    public static void CompletionOfDownloadMessage(String pid1) {
+    public static void CompletionOfDownloadMessage(int pid1) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
         logger.log(Level.INFO, String.format("Peer %s has downloaded the complete file.", pid1));
     }
