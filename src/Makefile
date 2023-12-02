@@ -8,6 +8,7 @@ run:
 clean:
 	rm -rf *.class
 	rm -rf util/*.class peers/*.class messages/*.class
+	rm -rf *.log
 
 test:
 	rm -rf *.class

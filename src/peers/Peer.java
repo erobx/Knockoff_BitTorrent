@@ -153,14 +153,15 @@ public class Peer {
                         System.out.println("Exception: " + e);
                     }
                 }
-
             }
         }
 
+        closePeers();
+    }
+
+    private void closePeers() {
         System.out.println("Closing");
-
-        // Close connections
-
+        PeerLogger.ClearLogs();
     }
 
     private void readConfig() {

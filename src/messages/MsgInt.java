@@ -46,6 +46,7 @@ public class MsgInt extends Message {
 
         while (!(sendingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
             pieceIndex = random.nextInt(Peer.numPieces);
+            System.out.println("stuck in loop");
         }
 
         return pieceIndex;
