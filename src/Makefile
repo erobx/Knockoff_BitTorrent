@@ -8,3 +8,11 @@ run:
 clean:
 	rm -rf *.class
 	rm -rf util/*.class peers/*.class messages/*.class
+
+test:
+	rm -rf *.class
+	rm -rf util/*.class peers/*.class messages/*.class
+	javac peerProcess.java StartLocalPeers.java
+	javac util/*.java peers/*.java messages/*.java
+	java StartLocalPeers
+	

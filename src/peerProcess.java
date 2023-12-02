@@ -13,8 +13,20 @@ public class peerProcess {
         try {
             peer.run();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            if (stackTrace.length > 0) {
+                StackTraceElement topFrame = stackTrace[0];
+                String className = topFrame.getClassName();
+                String methodName = topFrame.getMethodName();
+                String fileName = topFrame.getFileName();
+                int lineNumber = topFrame.getLineNumber();
+
+                System.out.println("Exception in " + className + "." + methodName +
+                        " (" + fileName + ":" + lineNumber + "): " + e);
+            } else {
+                // Handle the case where the stack trace is empty
+                System.out.println("Exception: " + e);
+            }
         }
     }
 }

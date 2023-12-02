@@ -1,6 +1,7 @@
 package messages;
 
 import peers.Peer;
+import util.PeerLogger;
 
 public class MsgNotInt extends Message {
 
@@ -13,6 +14,8 @@ public class MsgNotInt extends Message {
     public void handle() {
         String logMessage = String.format("NOT_INTERESTED message received from %s at %s", senderID, receiverID);
         System.out.println(logMessage);
+
+        PeerLogger.ReceiveNotInterestedMessage(receiverID, receiverID);
 
         setPeerInterested(senderID, false);
     }

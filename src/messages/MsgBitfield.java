@@ -20,12 +20,15 @@ public class MsgBitfield extends Message {
     // TODO Debug and add logging
     @Override
     public void handle() throws IOException {
-        System.out.println("BITFIELD message received from " + senderID + " at " + receiverID + " : "
-                + Arrays.toString(receivedBitfield.getBitfield()));
+        // System.out.println("BITFIELD message received from " + senderID + " at " +
+        // receiverID + " : "
+        // + Arrays.toString(receivedBitfield.getBitfield()));
 
         // Check if bitfield has the pieces that receiver wants
         Bitfield myBitfield = Peer.bitfield;
         boolean interested = hasInterestingPieces(myBitfield);
+
+        Peer.peers.get(senderID).peerInterested = neighborIsInterested(myBitfield);
 
         MessageType messageType = interested ? MessageType.INTERESTED : MessageType.NOT_INTERESTED;
 
@@ -36,6 +39,15 @@ public class MsgBitfield extends Message {
     private boolean hasInterestingPieces(Bitfield myBitfield) {
         for (int i = 0; i < Peer.numPieces; i++) {
             if (receivedBitfield.hasPiece(i) && !myBitfield.hasPiece(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean neighborIsInterested(Bitfield myBitfield) {
+        for (int i = 0; i < Peer.numPieces; i++) {
+            if (!receivedBitfield.hasPiece(i) && myBitfield.hasPiece(i)) {
                 return true;
             }
         }

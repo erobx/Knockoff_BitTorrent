@@ -3,6 +3,7 @@ package messages;
 import peers.Neighbor;
 import peers.Peer;
 import util.Bitfield;
+import util.PeerLogger;
 
 public class MsgHave extends Message {
 
@@ -23,6 +24,8 @@ public class MsgHave extends Message {
         Neighbor neighborPeer = Peer.peers.get(senderID);
         updateNeighborBitfield(neighborPeer.bitfield);
         checkAndUpdatePeerCompletion(neighborPeer);
+
+        PeerLogger.ReceiveHaveMessage(receiverID, receiverID, pieceIndex);
     }
 
     private void updateNeighborBitfield(Bitfield bitfield) {
@@ -35,6 +38,7 @@ public class MsgHave extends Message {
         if (neighborBitfield.isFull()) {
             Peer.unfinishedPeers--;
             neighbor.isDone = true;
+            PeerLogger.CompletionOfDownloadMessage(receiverID);
         }
     }
 

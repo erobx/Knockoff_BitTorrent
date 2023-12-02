@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import peers.Neighbor;
 import peers.Peer;
+import util.PeerLogger;
 
 public class MsgChoke extends Message {
 
@@ -23,6 +24,7 @@ public class MsgChoke extends Message {
 
     private void setPeerChoking(Neighbor neighbor, boolean isChoking) {
         neighbor.peerChoking = isChoking;
+        PeerLogger.ChokeMessage(receiverID, senderID);
     }
 
 }
