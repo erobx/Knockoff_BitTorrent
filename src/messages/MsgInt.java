@@ -44,9 +44,10 @@ public class MsgInt extends Message {
     private int getRandomUnownedPiece(Bitfield sendingBitfield, Bitfield myBitfield, Random random) {
         int pieceIndex = random.nextInt(Peer.numPieces);
 
-        while (!(sendingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
-            pieceIndex = random.nextInt(Peer.numPieces);
-            System.out.println("stuck in loop");
+        if (!myBitfield.isFull()) {
+            while (!(sendingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
+                pieceIndex = random.nextInt(Peer.numPieces);
+            }
         }
 
         return pieceIndex;

@@ -6,6 +6,7 @@ import java.util.Random;
 import peers.Neighbor;
 import peers.Peer;
 import util.Bitfield;
+import util.PeerLogger;
 
 public class MsgUnchoke extends Message {
 
@@ -36,6 +37,8 @@ public class MsgUnchoke extends Message {
 
             sendMessage(MessageType.REQUEST, senderID, receiverID, intToByteArray(pieceIndex));
         }
+
+        PeerLogger.UnchokeMessage(receiverID, unchokingPeer.peerID);
     }
 
     private int getRandomUnownedPieceIndex(Bitfield peerBitfield, Bitfield myBitfield, Random random) {

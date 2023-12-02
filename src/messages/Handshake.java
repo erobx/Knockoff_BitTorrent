@@ -5,6 +5,8 @@ import java.security.SecureRandom;
 
 import javax.sound.midi.Receiver;
 
+import util.PeerLogger;
+
 public class Handshake implements Serializable {
     private String header;
     private byte[] zeros = new byte[10];
@@ -54,19 +56,21 @@ public class Handshake implements Serializable {
 
     /**
      * Process for serverside handshaking
+     * 
      * @param in
      * @param out
      * @param peerID
      * @return peerID of accecpted handshake or -1 if invalid handshake;
      */
-    public static int serverHandshake(InputStream in, OutputStream out, int senderPID) { 
+    public static int serverHandshake(InputStream in, OutputStream out, int senderPID) {
         Handshake clientHandshake = receiveHandshake(in, senderPID);
         if (clientHandshake.header.equals("P2PFILESHARINGPROJ")) {
-            // System.out.println("Client Handshake received from " + clientHandshake.senderPID);
+            // System.out.println("Client Handshake received from " +
+            // clientHandshake.senderPID);
+
             sendHandshake(out, senderPID, clientHandshake.senderPID);
             return clientHandshake.senderPID;
-        }
-        else{
+        } else {
             System.out.println("Handshake invalid");
             return -1;
         }
@@ -75,21 +79,21 @@ public class Handshake implements Serializable {
     public static void clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
         sendHandshake(out, senderID, receiverID);
         Handshake serverHandshake = receiveHandshake(in, senderID);
-        
+
         if (serverHandshake.getSenderID() == receiverID) {
-            // System.out.println("Server handshake accepted from " + serverHandshake.getSenderID());
-        }
-        else {
-            System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID );
+            // System.out.println("Server handshake accepted from " +
+            // serverHandshake.getSenderID());
+            PeerLogger.TCPReceiveMessage(senderID, receiverID);
+        } else {
+            System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID);
         }
     }
-
-
 
     public static void sendHandshake(OutputStream out, int senderPID, int receiverPID) {
         try {
             Handshake msg = new Handshake("P2PFILESHARINGPROJ", senderPID, receiverPID);
             msg.serialize(out);
+            PeerLogger.TCPSendMessage(senderPID, receiverPID);
             // System.out.println("Sending handshake to " + receiverPID);
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -117,6 +121,6 @@ public class Handshake implements Serializable {
             this.senderPID = senderPID;
             this.receiverPID = receiverPID;
         }
-        
+
     }
 }

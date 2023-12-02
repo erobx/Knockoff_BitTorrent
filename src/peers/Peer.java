@@ -41,7 +41,7 @@ public class Peer {
     public static HashMap<Integer, Neighbor> peers = new HashMap<Integer, Neighbor>();
     public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
-    private int[] prefPeers;
+    private Vector<Integer> prefPeers;
     private int optUnchokedPeer;
     private String hostname;
     private int port;
@@ -82,6 +82,7 @@ public class Peer {
         // Read config files
         readConfig();
 
+        PeerLogger.ClearAllLogs();
         PeerLogger.InitLog(peerID);
 
         // Init bitfield
@@ -161,7 +162,6 @@ public class Peer {
 
     private void closePeers() {
         System.out.println("Closing");
-        PeerLogger.ClearLogs();
     }
 
     private void readConfig() {
@@ -213,7 +213,7 @@ public class Peer {
         }
         numPieces = (int) Math.ceil((double) fileSize / pieceSize);
         lastPieceSize = fileSize - ((numPieces - 1) * pieceSize);
-        prefPeers = new int[numPrefNeighbors];
+        prefPeers = new Vector<>(numPrefNeighbors);
     }
 
     private void readPeerInfo() {
@@ -315,12 +315,14 @@ public class Peer {
             for (int i = 0; i < numPrefNeighbors; i++) {
                 Neighbor preferredPeer = interestedPeersQueue.poll();
                 if (preferredPeer != null) {
-                    prefPeers[i] = preferredPeer.peerID;
+                    prefPeers.set(i, preferredPeer.peerID);
                     unchoke(preferredPeer.peerID);
                 } else {
                     System.err.println("Error! Trying to add an unconnected peer to preferred peers");
                 }
             }
+
+            PeerLogger.PrefNeighborMessage(peerID, prefPeers);
 
             // Choke all remaining interested peers
             while (interestedPeersQueue.peek() != null) {
@@ -331,6 +333,7 @@ public class Peer {
                     System.err.println("Error! Trying to choke an unconnected peer");
                 }
             }
+
         } else {
             // The peer has downloaded the whole file
             Random rand = new Random();
@@ -344,8 +347,8 @@ public class Peer {
             for (int i = 0; i < peerIDs.length; i++) {
                 Neighbor peer = peers.get(peerIDs[i]);
                 if (peer != null) {
-                    if (peer.peerInterested && nPrefDex < prefPeers.length) {
-                        prefPeers[nPrefDex++] = peer.peerID;
+                    if (peer.peerInterested && nPrefDex < prefPeers.size()) {
+                        prefPeers.set(nPrefDex++, peer.peerID);
                         unchoke(peer.peerID);
                         break;
                     } else {
@@ -438,7 +441,9 @@ public class Peer {
                 optUnchokedPeer = peerIDs[i];
                 unchoke(optUnchokedPeer);
 
-                System.out.println("Optimistically unchoking peer: " + optUnchokedPeer);
+                PeerLogger.OptUnchokeNeighborMessage(peerID, optUnchokedPeer);
+
+                // System.out.println("Optimistically unchoking peer: " + optUnchokedPeer);
                 break;
             }
         }

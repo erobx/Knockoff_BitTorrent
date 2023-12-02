@@ -9,6 +9,7 @@ import java.util.Random;
 import peers.Neighbor;
 import peers.Peer;
 import util.Bitfield;
+import util.PeerLogger;
 
 public class MsgPiece extends Message {
 
@@ -31,6 +32,10 @@ public class MsgPiece extends Message {
 
         // Write the received piece to the file
         writePieceToFile(piece);
+
+        int totalNumpiece = 0; // TODO set this somehow
+
+        PeerLogger.DownloadPieceMessage(receiverID, senderID, pieceIndex, totalNumpiece);
 
         // Get the sending peer and update its data rate
         Neighbor sendingPeer = Peer.peers.get(senderID);

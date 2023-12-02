@@ -32,7 +32,7 @@ public class PeerLogger {
 
     static String logsDirectory = ".";
 
-    public static void ClearLogs() {
+    public static void ClearAllLogs() {
         try {
             File directory = new File(logsDirectory);
             File[] logFiles = directory.listFiles((dir, name) -> name.startsWith("log_peer_") && name.endsWith(".log"));
@@ -47,6 +47,27 @@ public class PeerLogger {
                 }
             } else {
                 System.out.println("No log files found in the directory: " + logsDirectory);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void ClearLog(int pid) {
+        try {
+            File directory = new File(logsDirectory);
+            File[] logFiles = directory.listFiles((dir, name) -> name.equals("log_peer_" + pid + ".log"));
+
+            if (logFiles != null && logFiles.length > 0) {
+                File logFile = logFiles[0]; // Assuming there is only one log file per peer
+
+                if (logFile.delete()) {
+                    System.out.println("Deleted log file: " + logFile.getName());
+                } else {
+                    System.out.println("Failed to delete log file: " + logFile.getName());
+                }
+            } else {
+                System.out.println("No log file found for peer " + pid + " in the directory: " + logsDirectory);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,15 +114,15 @@ public class PeerLogger {
         logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pSend, pRecieve));
     }
 
-    public static void PrefNeighborMessage(int pid1, Vector<Neighbor> preferredNeighbors) {
+    public static void PrefNeighborMessage(int pid1, Vector<Integer> preferredNeighbors) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
 
         String neighbors = "";
-        Iterator<Neighbor> it = preferredNeighbors.iterator();
+        Iterator<Integer> it = preferredNeighbors.iterator();
         if (it.hasNext())
-            neighbors += it.next().peerID;
+            neighbors += it.next();
         while (it.hasNext())
-            neighbors += ", " + it.next().peerID;
+            neighbors += ", " + it.next();
 
         logger.log(Level.INFO, String.format("Peer %s has the preferred neighbors %s", pid1, neighbors));
     }
@@ -140,10 +161,10 @@ public class PeerLogger {
                 String.format("Peer %s received the 'not interested' message from %s", pidReceived, pidSend));
     }
 
-    public static void DownloadPieceMessage(int pid1, int pid2, int pieceIndex, int pieceCount) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
+    public static void DownloadPieceMessage(int pRecieve, int pSend, int pieceIndex, int pieceCount) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pRecieve);
         logger.log(Level.INFO, String.format("Peer %s has downloaded the piece %d from %s. Now the number" +
-                " of pieces it has is %d", pid1, pieceIndex, pid2, pieceCount));
+                " of pieces it has is %d", pRecieve, pieceIndex, pSend, pieceCount));
     }
 
     public static void CompletionOfDownloadMessage(int pid1) {
