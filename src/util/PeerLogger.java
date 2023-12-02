@@ -2,6 +2,7 @@ package util;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.StringJoiner;
 import java.util.Vector;
 import java.io.File;
 import java.nio.file.Path;
@@ -117,12 +118,9 @@ public class PeerLogger {
     public static void PrefNeighborMessage(int pid1, Vector<Integer> preferredNeighbors) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
 
-        String neighbors = "";
-        Iterator<Integer> it = preferredNeighbors.iterator();
-        if (it.hasNext())
-            neighbors += it.next();
-        while (it.hasNext())
-            neighbors += ", " + it.next();
+        StringJoiner neighborsJoiner = new StringJoiner(", ");
+        preferredNeighbors.forEach(neighbor -> neighborsJoiner.add(String.valueOf(neighbor)));
+        String neighbors = neighborsJoiner.toString();
 
         logger.log(Level.INFO, String.format("Peer %s has the preferred neighbors %s", pid1, neighbors));
     }
@@ -167,8 +165,8 @@ public class PeerLogger {
                 " of pieces it has is %d", pRecieve, pieceIndex, pSend, pieceCount));
     }
 
-    public static void CompletionOfDownloadMessage(int pid1) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid1);
-        logger.log(Level.INFO, String.format("Peer %s has downloaded the complete file.", pid1));
+    public static void CompletionOfDownloadMessage(int pid) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid);
+        logger.log(Level.INFO, String.format("Peer %s has downloaded the complete file.", pid));
     }
 }

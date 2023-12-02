@@ -38,7 +38,6 @@ public class MsgHave extends Message {
         if (neighborBitfield.isFull()) {
             Peer.unfinishedPeers--;
             neighbor.isDone = true;
-            PeerLogger.CompletionOfDownloadMessage(receiverID);
         }
     }
 

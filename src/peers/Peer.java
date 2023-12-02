@@ -39,6 +39,7 @@ public class Peer {
     public static Bitfield bitfield;
     public static int unfinishedPeers;
     public static HashMap<Integer, Neighbor> peers = new HashMap<Integer, Neighbor>();
+    public static Set<Integer> finishedPeers = new HashSet<Integer>();
     public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
     private Vector<Integer> prefPeers;
@@ -82,7 +83,7 @@ public class Peer {
         // Read config files
         readConfig();
 
-        PeerLogger.ClearAllLogs();
+        PeerLogger.ClearLog(peerID);
         PeerLogger.InitLog(peerID);
 
         // Init bitfield
@@ -162,6 +163,8 @@ public class Peer {
 
     private void closePeers() {
         System.out.println("Closing");
+
+        PeerLogger.CompletionOfDownloadMessage(this.peerID);
     }
 
     private void readConfig() {

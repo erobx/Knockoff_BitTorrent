@@ -47,6 +47,7 @@ public class MsgInt extends Message {
         if (!myBitfield.isFull()) {
             while (!(sendingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
                 pieceIndex = random.nextInt(Peer.numPieces);
+                System.out.println("getting stuck");
             }
         }
 

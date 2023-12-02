@@ -65,9 +65,18 @@ class StartLocalPeers {
                         Process process = Runtime.getRuntime().exec("java peerProcess " + pInfo.peerId);
 
                         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        BufferedReader readerERR = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+
                         String line;
-                        while ((line = reader.readLine()) != null) {
-                            System.out.println("Peer " + pInfo.peerId + ": " + line);
+                        String errorLine;
+
+                        while ((line = reader.readLine()) != null || (errorLine = readerERR.readLine()) != null) {
+                            if (line != null) {
+                                System.out.println("Peer " + pInfo.peerId + ": " + line);
+                            }
+                            if (errorLine != null) {
+                                System.err.println("Peer Err " + pInfo.peerId + ": " + errorLine);
+                            }
                         }
 
                         int exitCode = process.waitFor();
