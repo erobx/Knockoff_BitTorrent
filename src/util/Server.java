@@ -3,6 +3,8 @@ package util;
 import java.io.*;
 import java.net.*;
 import messages.Message;
+import messages.Message.MessageType;
+import peers.Neighbor;
 import peers.Peer;
 import messages.Handshake;
 
@@ -30,7 +32,8 @@ public class Server extends Thread {
                 // Wait for handshake
                 int senderID = -1;
                 try {
-                    senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID);
+                    senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(),
+                            peerID);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -42,6 +45,10 @@ public class Server extends Thread {
                 ch.setDaemon(true);
                 new Thread(ch).start();
 
+                if (!Peer.bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
+                    Message.sendMessage(MessageType.BITFIELD, senderID, this.peerID,
+                            Peer.bitfield.getBitfield());
+                }
             }
         } catch (IOException ex) {
             ex.printStackTrace();

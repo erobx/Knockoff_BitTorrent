@@ -18,31 +18,29 @@ public class MsgInt extends Message {
     public void handle() throws IOException {
         String logMessage = String.format("INTERESTED message received from %s at %s", senderID, receiverID);
         System.out.println(logMessage);
+        Neighbor sendingPeer = Peer.peers.get(senderID);
+        setPeerChoking(sendingPeer, true);
 
-        Neighbor unchokingPeer = Peer.peers.get(senderID);
-        setPeerChoking(unchokingPeer, true);
+        requestRandomPiece(sendingPeer.bitfield);
 
-        if (unchokingPeer.interested) {
-            requestRandomPiece(unchokingPeer.bitfield);
-        }
     }
 
     private void setPeerChoking(Neighbor peer, boolean isChoking) {
         peer.peerChoking = isChoking;
     }
 
-    private void requestRandomPiece(Bitfield unchokingBitfield) throws IOException {
+    private void requestRandomPiece(Bitfield sendingBitfield) throws IOException {
         Bitfield myBitfield = Peer.bitfield;
         Random random = new Random();
 
-        int pieceIndex = getRandomUnownedPiece(unchokingBitfield, myBitfield, random);
+        int pieceIndex = getRandomUnownedPiece(sendingBitfield, myBitfield, random);
         sendMessageRequest(pieceIndex);
     }
 
-    private int getRandomUnownedPiece(Bitfield unchokingBitfield, Bitfield myBitfield, Random random) {
+    private int getRandomUnownedPiece(Bitfield sendingBitfield, Bitfield myBitfield, Random random) {
         int pieceIndex = random.nextInt(Peer.numPieces);
 
-        while (!(unchokingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
+        while (!(sendingBitfield.hasPiece(pieceIndex) && !myBitfield.hasPiece(pieceIndex))) {
             pieceIndex = random.nextInt(Peer.numPieces);
         }
 

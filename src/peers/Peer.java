@@ -70,7 +70,7 @@ public class Peer {
 
         long TimeoutValue = 30; // 30 seconds
 
-        System.out.println((System.currentTimeMillis() - lastTimeoutCheck) / 1000);
+        System.out.println("Time: " + (System.currentTimeMillis() - lastTimeoutCheck) / 1000);
 
         if ((System.currentTimeMillis() - lastTimeoutCheck) / 1000 >= TimeoutValue) {
             unfinishedPeers = 0;
@@ -94,7 +94,8 @@ public class Peer {
 
         unfinishedPeers = numPeers;
         lastTimeoutCheck = System.currentTimeMillis();
-
+        lastPreferredUpdateTime = System.currentTimeMillis();
+        lastOpUnchokeUpdateTime = System.currentTimeMillis();
         // Main loop
         while (unfinishedPeers != 0) {
 
@@ -106,7 +107,6 @@ public class Peer {
             MessageObj messageObj = null;
             try {
                 // try to get a message from buffer for 5 seconds
-                System.out.println("Trying to get a message from buffer");
                 messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 System.out.println("Failed to get message");
@@ -115,25 +115,25 @@ public class Peer {
 
             // check if enough time has passed for preferedNeighbors
             if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
-                // System.out.println("Updating preferred neighbors");
                 updatePreferred();
                 lastPreferredUpdateTime = System.currentTimeMillis();
             }
 
             // check if enough time has passed for optimistically unchoked
             if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
-                // System.out.println("Updating optimistically-unchoked neighbor");
+                optimisticUnchoke();
                 lastOpUnchokeUpdateTime = System.currentTimeMillis();
             }
 
             // if there is a message do the thing
             if (messageObj != null) {
+
                 byte[] messageBytes = messageObj.message;
                 int senderID = messageObj.senderID;
 
-                Message m = Message.getMessage(messageBytes, senderID, peerID);
                 try {
-                    m.handle(); // will handle based on what message it is
+                    Message m = Message.getMessage(messageBytes, senderID, peerID);
+                    m.handle(); // will handle based on what message it i
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
                     if (stackTrace.length > 0) {
@@ -242,9 +242,9 @@ public class Peer {
                     this.port = Integer.parseInt(tokens[2]);
                     this.hasFile = tokens[3].equals("1");
                     this.validPeerID = true;
-                    break;
+                } else {
+                    peers.put(peerID, new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
                 }
-                peers.put(peerID, new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
             }
             in.close();
 
@@ -281,10 +281,6 @@ public class Peer {
 
                 ch.setDaemon(true);
                 ch.start();
-
-                if (!bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
-                    Message.sendMessage(MessageType.BITFIELD, neighbor.peerID, this.peerID, bitfield.getBitfield());
-                }
 
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);

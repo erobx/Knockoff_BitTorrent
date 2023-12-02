@@ -140,68 +140,60 @@ public abstract class Message implements Serializable {
     // return byteArrayToInt();
     // }
 
-    public static Message getMessage(byte[] messageBytes, int senderID, int receiverID) {
-        try {
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
-            DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+    public static Message getMessage(byte[] messageBytes, int senderID, int receiverID) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
+        DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
 
-            // Read the int (length)
-            int length = dataInputStream.readInt();
+        // Read the int (length)
+        int length = dataInputStream.readInt();
 
-            // Read the byte (type)
-            byte type = dataInputStream.readByte();
+        // Read the byte (type)
+        byte type = dataInputStream.readByte();
 
-            // Read the rest of the bytes as payload
-            byte[] payload = new byte[length];
+        // Read the rest of the bytes as payload
+        byte[] payload = new byte[length];
 
-            try {
-                dataInputStream.readFully(payload);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                System.out.println("Couldn't retrieve payload.");
-            }
-
-            // int index = byteArrayToInt(payload);
-
-            Message message = null;
-
-            switch (MessageType.getTypeByInt((int) type)) {
-                // Choke - no payload
-                case CHOKE ->
-                    message = new MsgChoke(length, (byte) MessageType.CHOKE.getValue(), null, senderID, receiverID);
-                // Unchoke - no payload
-                case UNCHOKE ->
-                    message = new MsgUnchoke(length, (byte) MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
-                // Interested - no payload
-                case INTERESTED ->
-                    message = new MsgInt(length, (byte) MessageType.INTERESTED.getValue(), null, senderID, receiverID);
-                // Not interested - no payload
-                case NOT_INTERESTED ->
-                    message = new MsgNotInt(length, (byte) MessageType.NOT_INTERESTED.getValue(), null, senderID,
-                            receiverID);
-                // Have - index payload
-                case HAVE ->
-                    message = new MsgHave(length, (byte) MessageType.HAVE.getValue(), payload, senderID, receiverID);
-                // Bitfield - bitfield payload
-                case BITFIELD ->
-                    message = new MsgBitfield(length, (byte) MessageType.BITFIELD.getValue(), payload, senderID,
-                            receiverID);
-                // Request - index payload
-                case REQUEST ->
-                    message = new MsgHave(length, (byte) MessageType.REQUEST.getValue(), payload, senderID, receiverID);
-                // Piece - index + piece payload
-                // TODO PIECE message could be setup wrong
-                case PIECE ->
-                    message = new MsgPiece(length, (byte) MessageType.PIECE.getValue(), payload, senderID, receiverID);
-                // Add more cases as needed
-            }
-
-            return message;
-        } catch (IOException ex) {
-            System.out.println("Failed to deserialize.");
-            ex.printStackTrace();
+        if (length > 0) {
+            dataInputStream.readFully(payload);
+        } else {
+            payload = null;
         }
-        return null;
+        // int index = byteArrayToInt(payload);
+
+        Message message = null;
+
+        switch (MessageType.getTypeByInt((int) type)) {
+            // Choke - no payload
+            case CHOKE ->
+                message = new MsgChoke(length, (byte) MessageType.CHOKE.getValue(), null, senderID, receiverID);
+            // Unchoke - no payload
+            case UNCHOKE ->
+                message = new MsgUnchoke(length, (byte) MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
+            // Interested - no payload
+            case INTERESTED ->
+                message = new MsgInt(length, (byte) MessageType.INTERESTED.getValue(), null, senderID, receiverID);
+            // Not interested - no payload
+            case NOT_INTERESTED ->
+                message = new MsgNotInt(length, (byte) MessageType.NOT_INTERESTED.getValue(), null, senderID,
+                        receiverID);
+            // Have - index payload
+            case HAVE ->
+                message = new MsgHave(length, (byte) MessageType.HAVE.getValue(), payload, senderID, receiverID);
+            // Bitfield - bitfield payload
+            case BITFIELD ->
+                message = new MsgBitfield(length, (byte) MessageType.BITFIELD.getValue(), payload, senderID,
+                        receiverID);
+            // Request - index payload
+            case REQUEST ->
+                message = new MsgHave(length, (byte) MessageType.REQUEST.getValue(), payload, senderID, receiverID);
+            // Piece - index + piece payload
+            // TODO PIECE message could be setup wrong
+            case PIECE ->
+                message = new MsgPiece(length, (byte) MessageType.PIECE.getValue(), payload, senderID, receiverID);
+            // Add more cases as needed
+        }
+
+        return message;
     }
 
     public static void sendMessage(Message.MessageType type, int senderID, int receiverID, byte[] payload)

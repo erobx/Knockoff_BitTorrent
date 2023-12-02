@@ -26,14 +26,14 @@ public class ClientHandler extends Thread {
 
     // COULD BE REMOVED I DONT KNOW THOUGH, currently used by Server.java
     // public ClientHandler(Socket clientSocket, int peerID) {
-    //     this.clientSocket = clientSocket;
-    //     this.peerID = peerID;
-    //     try {
-    //         out = clientSocket.getOutputStream();
-    //         out.flush();
-    //     } catch (IOException ex) {
-    //         throw new RuntimeException(ex);
-    //     }
+    // this.clientSocket = clientSocket;
+    // this.peerID = peerID;
+    // try {
+    // out = clientSocket.getOutputStream();
+    // out.flush();
+    // } catch (IOException ex) {
+    // throw new RuntimeException(ex);
+    // }
     // }
 
     @Override
