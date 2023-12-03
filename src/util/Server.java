@@ -25,7 +25,7 @@ public class Server extends Thread {
         try {
             listener = new ServerSocket(port);
             listener.setReuseAddress(true);
-            System.out.println("[Server] Waiting for connection on port " + port);
+            // System.out.println("[Server] Waiting for connection on port " + port);
             while (true) {
                 Socket clientSocket = listener.accept();
 

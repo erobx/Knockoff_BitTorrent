@@ -270,6 +270,7 @@ public class Peer {
             Socket clientSocket;
             try {
                 Neighbor neighbor = entry.getValue();
+                System.out.println("Entry " + neighbor.hostname + " " + neighbor.port);
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
 
                 // Send handshake

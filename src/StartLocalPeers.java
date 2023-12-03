@@ -68,14 +68,14 @@ class StartLocalPeers {
                         BufferedReader readerERR = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
                         String line;
-                        String errorLine;
+                        String errorLine = null;
 
                         while ((line = reader.readLine()) != null || (errorLine = readerERR.readLine()) != null) {
                             if (line != null) {
                                 System.out.println("Peer " + pInfo.peerId + ": " + line);
                             }
                             if (errorLine != null) {
-                                System.err.println("Peer Err " + pInfo.peerId + ": " + errorLine);
+                                System.out.println("Peer Err " + pInfo.peerId + ": " + errorLine);
                             }
                         }
 

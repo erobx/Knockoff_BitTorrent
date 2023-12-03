@@ -15,4 +15,7 @@ test:
 	javac peerProcess.java StartLocalPeers.java
 	javac util/*.java peers/*.java messages/*.java
 	java StartLocalPeers
+
+moveFiles:
+	scp -r ../src vboudreau1@lin114-05.cise.ufl.edu:~
 	
