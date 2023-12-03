@@ -91,6 +91,19 @@ public class Peer {
         }
     }
 
+    private void sendBitfields() {
+        for (Map.Entry<Integer, Neighbor> entry : peers.entrySet()) {
+            if (!Peer.bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
+                try {
+                    Message.sendMessage(MessageType.BITFIELD, this.peerID, entry.getValue().peerID,
+                        Peer.bitfield.getBitfield());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
     public void run() throws Exception {
         // Read config files
         readConfig();
@@ -110,6 +123,8 @@ public class Peer {
         createClients();
 
         waitForConnections();
+
+        sendBitfields();
 
         unfinishedPeers = numPeers; // might need to be numPeers - 1
         lastTimeoutCheck = System.currentTimeMillis();
@@ -303,16 +318,6 @@ public class Peer {
                 // Sending Handshake
                 handshake.serialize(clientSocket.getOutputStream());
                 PeerLogger.TCPSendMessage(peerID, neighbor.peerID);
-
-                // Receiving Handshake
-                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                String msgString = in.readLine();
-                Handshake reply = Handshake.deserialize(msgString.getBytes());
-                int senderID = reply.getSenderID();
-                PeerLogger.TCPReceiveMessage(peerID, neighbor.peerID);
-                System.out.println("RECIEVED HANDSHAKE: " + senderID + " -> " + peerID);
-
-
             } catch (IOException e) {
                 PeerLogger.Error(neighbor.peerID, "IO Exception");
             }
@@ -321,7 +326,20 @@ public class Peer {
             ClientHandler ch = new ClientHandler(clientSocket, entry.getValue().peerID, this);
 
             clients.put(entry.getValue().peerID, ch);
-            System.out.println("PUTTING CLIENT IN CLIENTS: " + entry.getValue().peerID);
+
+            try {
+                // Receiving Handshake
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String msgString = in.readLine();
+                Handshake reply = Handshake.deserialize(msgString.getBytes());
+                int senderID = reply.getSenderID();
+                PeerLogger.TCPReceiveMessage(peerID, neighbor.peerID);
+                System.out.println("RECIEVED HANDSHAKE: " + senderID + " -> " + peerID);
+            } catch (IOException ex) {
+                PeerLogger.Error(neighbor.peerID, "IO Exception");
+            }
+
+            System.out.println("PUTTING CLIENT IN CLIENTS PEER: " + entry.getValue().peerID);
             System.out.println("Clients: " + clients.size());
 
             ch.setDaemon(true);
@@ -331,17 +349,17 @@ public class Peer {
 
     private void updatePreferred() throws IOException {
         // Determine preferred peers to unchoke based on download progress
+        prefPeers.clear();
         if (!hasFile) {
             // Create a priority queue to store interested peers
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
-            prefPeers.clear();
 
             // Iterate over all peers to identify interested ones
             for (Neighbor peer : peers.values()) {
                 if (peer != null) {
-                    // if (peer.peerInterested) {
-                    interestedPeersQueue.add(peer);
-                    // }
+                    if (peer.peerInterested) {
+                        interestedPeersQueue.add(peer);
+                    }
                     // Reset dataRate for each peer
                     peer.dataRate = 0;
                 }

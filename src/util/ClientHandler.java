@@ -7,7 +7,7 @@ import java.util.Arrays;
 import peers.Peer;
 
 public class ClientHandler extends Thread {
-    private final Socket clientSocket;
+    private Socket clientSocket;
     private OutputStream out;
     private int peerID;
     private Peer thisPeer;
@@ -43,14 +43,12 @@ public class ClientHandler extends Thread {
             while ((msg = in.readLine()) != null) {
                 // System.out.println("Message length: " + msg.getBytes().length);
                 thisPeer.addToMessageQueue(msg.getBytes(), peerID);
-                // System.out.println("Message added to queue");
+                System.out.println("Message added to queue");
             }
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) {
+            Peer.errorLogging(ex, peerID);
         }
     }
-
-    
 
     public Peer getPeer() {
         return thisPeer;

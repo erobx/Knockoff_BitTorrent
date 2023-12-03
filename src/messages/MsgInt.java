@@ -23,10 +23,10 @@ public class MsgInt extends Message {
         PeerLogger.ReceiveInterestedMessage(receiverID, senderID);
 
         Neighbor sendingPeer = Peer.peers.get(senderID);
-        setPeerChoking(sendingPeer, true);
+        sendingPeer.peerInterested = true;
+        // setPeerChoking(sendingPeer, true);
 
-        requestRandomPiece(sendingPeer.bitfield);
-
+        // requestRandomPiece(sendingPeer.bitfield);
     }
 
     private void setPeerChoking(Neighbor peer, boolean isChoking) {
@@ -55,7 +55,7 @@ public class MsgInt extends Message {
     }
 
     private void sendMessageRequest(int pieceIndex) throws IOException {
-        Message.sendMessage(MessageType.REQUEST, senderID, receiverID, intToByteArray(pieceIndex));
+        Message.sendMessage(MessageType.REQUEST, receiverID, senderID, intToByteArray(pieceIndex));
     }
 
 }

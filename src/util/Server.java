@@ -44,6 +44,7 @@ public class Server extends Thread {
                     // senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(),
                     //         peerID);
                 } catch (IOException ex) {
+                    System.out.println("ERROR READING INPUT");
                     throw new RuntimeException(ex);
                 }
 
@@ -54,7 +55,7 @@ public class Server extends Thread {
                 // Create new ClientHandler
                 ClientHandler ch = new ClientHandler(clientSocket, senderID, peer);
                 Peer.clients.put(senderID, ch);
-                System.out.println("PUTTING CLIENT IN CLIENTS: " + senderID);
+                System.out.println("PUTTING CLIENT IN CLIENTS SERVER: " + senderID);
                 System.out.println("Clients: " + Peer.clients.size());
 
                 Handshake reply = new Handshake("P2PFILESHARINGPROJ", peerID);
@@ -64,11 +65,6 @@ public class Server extends Thread {
 
                 ch.setDaemon(true);
                 ch.start();
-
-                if (!Peer.bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
-                    Message.sendMessage(MessageType.BITFIELD, this.peerID, senderID,
-                            Peer.bitfield.getBitfield());
-                }
             }
         } catch (IOException ex) {
             ex.printStackTrace();

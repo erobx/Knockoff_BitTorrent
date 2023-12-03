@@ -148,16 +148,16 @@ public abstract class Message implements Serializable {
         String input = reader.readLine();
         ByteBuffer buffer = ByteBuffer.wrap(input.getBytes());
 
-        System.out.println("MESSAGE INPUT: " + input + " of length " + input.length());
+        // System.out.println("MESSAGE INPUT: " + input + " of length " + input.length());
 
         // Read the int (length)
         // int length = byteArrayToInt(input.substring(0, 4).getBytes());
         int length = buffer.getInt();
-        System.out.println("MESSAGE LEN: " + length);
+        // System.out.println("MESSAGE LEN: " + length);
 
         // Read the byte (type)
         int type = buffer.get();
-        System.out.println("MESSAGE TYPE: " + type);
+        // System.out.println("MESSAGE TYPE: " + type);
 
         // Read the rest of the bytes as payload
         byte[] payload = new byte[length];
@@ -211,7 +211,7 @@ public abstract class Message implements Serializable {
 
     public static void sendMessage(Message.MessageType type, int senderID, int receiverID, byte[] payload)
             throws IOException {
-        System.out.println("ATTEMPTING TO SEND A MESSAGE: " + senderID + " -> " + receiverID);
+        System.out.println("ATTEMPTING TO SEND A MESSAGE: " + type.toString() + " " + senderID + " -> " + receiverID);
         util.ClientHandler ch = Peer.clients.get(receiverID);
         if (ch == null) {
             throw new RuntimeException("Client receiver ID Cannot be found");
