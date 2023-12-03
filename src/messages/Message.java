@@ -146,22 +146,26 @@ public abstract class Message implements Serializable {
         BufferedReader reader = new BufferedReader(new InputStreamReader(byteArrayInputStream));
 
         String input = reader.readLine();
+        ByteBuffer buffer = ByteBuffer.wrap(input.getBytes());
+
         System.out.println("MESSAGE INPUT: " + input + " of length " + input.length());
 
         // Read the int (length)
-        int length = byteArrayToInt(input.substring(0, 4).getBytes());
+        // int length = byteArrayToInt(input.substring(0, 4).getBytes());
+        int length = buffer.getInt();
         System.out.println("MESSAGE LEN: " + length);
 
         // Read the byte (type)
-        byte type = (byte) (input.charAt(5) - '0');
+        int type = buffer.get();
         System.out.println("MESSAGE TYPE: " + type);
 
         // Read the rest of the bytes as payload
         byte[] payload = new byte[length];
 
         if (length > 0) {
-            String pString = input.substring(7, length - 1);
-            payload = pString.getBytes();
+            // String pString = input.substring(7, length - 1);
+            // payload = pString.getBytes();
+            buffer.get(payload);
 
         } else {
             payload = null;
@@ -169,7 +173,7 @@ public abstract class Message implements Serializable {
         // int index = byteArrayToInt(payload);
         Message message = null;
 
-        switch (MessageType.getTypeByInt((int) type)) {
+        switch (MessageType.getTypeByInt((type))) {
             // Choke - no payload
             case CHOKE ->
                 message = new MsgChoke(length, (byte) MessageType.CHOKE.getValue(), null, senderID, receiverID);
