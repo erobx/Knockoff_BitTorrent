@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.net.*;
 import java.io.*;
 
@@ -39,7 +40,7 @@ public class Peer {
     public static Bitfield bitfield;
     public static int unfinishedPeers;
     public static HashMap<Integer, Neighbor> peers = new HashMap<Integer, Neighbor>();
-    public static Set<Integer> finishedPeers = new HashSet<Integer>();
+    public static Set<Integer> finishedPeers = new HashSet<Integer>(); // might be gone
     public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
     private Vector<Integer> prefPeers;
@@ -97,6 +98,8 @@ public class Peer {
         // Establish TCP connections with all peers before
         createClients();
 
+        waitForConnections();
+
         unfinishedPeers = numPeers;
         lastTimeoutCheck = System.currentTimeMillis();
         lastPreferredUpdateTime = System.currentTimeMillis();
@@ -115,7 +118,7 @@ public class Peer {
                 messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 System.out.println("Failed to get message");
-                throw new RuntimeException(e);
+                // throw new RuntimeException(e);
             }
 
             // check if enough time has passed for preferedNeighbors
@@ -159,6 +162,10 @@ public class Peer {
         }
 
         closePeers();
+    }
+
+    private void waitForConnections() {
+
     }
 
     private void closePeers() {
@@ -260,7 +267,7 @@ public class Peer {
                 System.exit(1);
             }
         } catch (Exception ex) {
-            System.out.println(ex.toString());
+            errorLogging(ex, peerID);
         }
     }
 
@@ -270,7 +277,6 @@ public class Peer {
             Socket clientSocket;
             try {
                 Neighbor neighbor = entry.getValue();
-                System.out.println("Entry " + neighbor.hostname + " " + neighbor.port);
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
 
                 // Send handshake
@@ -279,6 +285,7 @@ public class Peer {
                             neighbor.peerID);
 
                 } catch (IOException ex) {
+                    System.err.println("This is the error");
                     ex.printStackTrace();
                 }
 
@@ -292,8 +299,8 @@ public class Peer {
 
             } catch (UnknownHostException ex) {
                 throw new RuntimeException(ex);
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            } catch (Exception e) {
+                // errorLogging(e, peerID);
             }
         }
     }
@@ -303,13 +310,14 @@ public class Peer {
         if (!hasFile) {
             // Create a priority queue to store interested peers
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
+            prefPeers.clear();
 
             // Iterate over all peers to identify interested ones
             for (Neighbor peer : peers.values()) {
                 if (peer != null) {
-                    if (peer.peerInterested) {
-                        interestedPeersQueue.add(peer);
-                    }
+                    // if (peer.peerInterested) {
+                    interestedPeersQueue.add(peer);
+                    // }
                     // Reset dataRate for each peer
                     peer.dataRate = 0;
                 }
@@ -319,7 +327,7 @@ public class Peer {
             for (int i = 0; i < numPrefNeighbors; i++) {
                 Neighbor preferredPeer = interestedPeersQueue.poll();
                 if (preferredPeer != null) {
-                    prefPeers.set(i, preferredPeer.peerID);
+                    prefPeers.add(preferredPeer.peerID);
                     unchoke(preferredPeer.peerID);
                 } else {
                     System.err.println("Error! Trying to add an unconnected peer to preferred peers");
@@ -339,22 +347,22 @@ public class Peer {
             }
 
         } else {
-            // The peer has downloaded the whole file
+            // The peer has downloaded the whole file so unchoke and choke randomly since
+            // they don't receive pieces
             Random rand = new Random();
             Integer[] peerIDs = new Integer[peers.size()];
             peerIDs = peers.keySet().toArray(peerIDs);
             knuthShuffle(peerIDs);
 
-            int nPrefDex = 0;
+            // int nPrefDex = 0;
 
             // Iterate over all peers to unchoke preferred ones randomly
             for (int i = 0; i < peerIDs.length; i++) {
                 Neighbor peer = peers.get(peerIDs[i]);
                 if (peer != null) {
-                    if (peer.peerInterested && nPrefDex < prefPeers.size()) {
-                        prefPeers.set(nPrefDex++, peer.peerID);
+                    if (peer.peerInterested) {
+                        prefPeers.add(peer.peerID);
                         unchoke(peer.peerID);
-                        break;
                     } else {
                         // Choke all remaining peers
                         choke(peer.peerID);
@@ -365,6 +373,8 @@ public class Peer {
                     System.err.println("Error! Unconnected peer");
                 }
             }
+
+            PeerLogger.PrefNeighborMessage(peerID, prefPeers);
         }
 
     }
@@ -451,6 +461,27 @@ public class Peer {
                 break;
             }
         }
+    }
+
+    public static void errorLogging(Exception e, int peerId) {
+        String exceptionDetails;
+
+        StackTraceElement[] stackTrace = e.getStackTrace();
+        if (stackTrace.length > 0) {
+            StackTraceElement topFrame = stackTrace[0];
+            String className = topFrame.getClassName();
+            String methodName = topFrame.getMethodName();
+            String fileName = topFrame.getFileName();
+            int lineNumber = topFrame.getLineNumber();
+
+            exceptionDetails = "Exception in " + className + "." + methodName +
+                    " (" + fileName + ":" + lineNumber + "): " + e;
+        } else {
+            // Handle the case where the stack trace is empty
+            exceptionDetails = "Exception: " + e;
+        }
+
+        PeerLogger.Error(peerId, exceptionDetails);
     }
 
     public void addToMessageQueue(byte[] msg, int peerID) {

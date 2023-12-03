@@ -2,7 +2,7 @@ package peers;
 
 import util.Bitfield;
 
-public class Neighbor {
+public class Neighbor implements Comparable {
     public final int peerID;
     public final String hostname;
     public final int port;
@@ -26,5 +26,17 @@ public class Neighbor {
         this.hasFile = hasFile;
 
         bitfield = new Bitfield(numPieces, hasFile);
+    }
+
+    public int compareTo(Object o) // reversed so prefpeers can use a max priority queue instead of the default min
+    {
+        Neighbor peer = (Neighbor) o;
+        if (this.dataRate < peer.dataRate) {
+            return 1;
+        }
+        if (this.dataRate > peer.dataRate) {
+            return -1;
+        }
+        return 0;
     }
 }

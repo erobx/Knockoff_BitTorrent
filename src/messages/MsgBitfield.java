@@ -7,6 +7,7 @@ import java.util.Arrays;
 import peers.Neighbor;
 import peers.Peer;
 import util.Bitfield;
+import util.PeerLogger;
 
 public class MsgBitfield extends Message {
 
@@ -23,6 +24,8 @@ public class MsgBitfield extends Message {
         // System.out.println("BITFIELD message received from " + senderID + " at " +
         // receiverID + " : "
         // + Arrays.toString(receivedBitfield.getBitfield()));
+
+        PeerLogger.bitfieldMessage(receiverID, senderID);
 
         // Check if bitfield has the pieces that receiver wants
         Bitfield myBitfield = Peer.bitfield;

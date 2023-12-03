@@ -75,7 +75,8 @@ class StartLocalPeers {
                                 System.out.println("Peer " + pInfo.peerId + ": " + line);
                             }
                             if (errorLine != null) {
-                                System.out.println("Peer Err " + pInfo.peerId + ": " + errorLine);
+                                System.out.println(
+                                        "Peer Err " + pInfo.peerId + ": " + errorLine);
                             }
                         }
 
