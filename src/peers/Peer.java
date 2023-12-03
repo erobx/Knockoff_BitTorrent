@@ -288,36 +288,36 @@ public class Peer {
     // Method to connect to peers before
     private void createClients() {
         for (Map.Entry<Integer, Neighbor> entry : peersBefore.entrySet()) {
-
             Socket clientSocket;
             try {
                 Neighbor neighbor = entry.getValue();
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-                // Send handshake
+            // Send handshake
+            int running = -1;
+            while (running != 0) {
                 try {
-                    Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID,
-                            neighbor.peerID);
+                    running = Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID,
+                            entry.getValue().peerID);
 
                 } catch (IOException ex) {
                     System.err.println("This is the error");
                     ex.printStackTrace();
                 }
-
-                // Handle clients
-                ClientHandler ch = new ClientHandler(clientSocket, neighbor.peerID, this);
-
-                clients.put(neighbor.peerID, ch);
-
-                ch.setDaemon(true);
-                ch.start();
-
-            } catch (UnknownHostException ex) {
-                System.out.println("Server " + entry.getValue().peerID + "has not started yet");
-                throw new RuntimeException(ex);
-            } catch (Exception e) {
-                // errorLogging(e, peerID);
             }
+
+            // Handle clients
+            ClientHandler ch = new ClientHandler(clientSocket, entry.getValue().peerID, this);
+
+            clients.put(entry.getValue().peerID, ch);
+
+            ch.setDaemon(true);
+            ch.start();
         }
     }
 

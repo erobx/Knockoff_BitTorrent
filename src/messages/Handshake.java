@@ -76,7 +76,7 @@ public class Handshake implements Serializable {
         }
     }
 
-    public static void clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
+    public static int clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
         sendHandshake(out, senderID, receiverID);
         Handshake serverHandshake = receiveHandshake(in, senderID);
 
@@ -84,8 +84,10 @@ public class Handshake implements Serializable {
             // System.out.println("Server handshake accepted from " +
             // serverHandshake.getSenderID());
             PeerLogger.TCPReceiveMessage(senderID, receiverID);
+            return 0;
         } else {
             System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID);
+            return -1;
         }
     }
 

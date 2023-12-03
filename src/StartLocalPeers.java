@@ -60,38 +60,39 @@ class StartLocalPeers {
             for (int i = 0; i < myStart.peerInfoVector.size(); i++) {
 
                 RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
-                Thread thread = new Thread(() -> {
-                    try {
-                        Process process = Runtime.getRuntime().exec("java peerProcess " + pInfo.peerId);
+                Runtime.getRuntime().exec("java peerProcess " + pInfo.peerId);
+                // Thread thread = new Thread(() -> {
+                //     try {
+                //         Process process = Runtime.getRuntime().exec("java peerProcess " + pInfo.peerId);
 
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                        BufferedReader readerERR = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                //         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                //         BufferedReader readerERR = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-                        String line;
-                        String errorLine = null;
+                //         String line;
+                //         String errorLine = null;
 
-                        while ((line = reader.readLine()) != null || (errorLine = readerERR.readLine()) != null) {
-                            if (line != null) {
-                                System.out.println("Peer " + pInfo.peerId + ": " + line);
-                            }
-                            if (errorLine != null) {
-                                System.out.println(
-                                        "Peer Err " + pInfo.peerId + ": " + errorLine);
-                            }
-                        }
+                //         while ((line = reader.readLine()) != null || (errorLine = readerERR.readLine()) != null) {
+                //             if (line != null) {
+                //                 System.out.println("Peer " + pInfo.peerId + ": " + line);
+                //             }
+                //             if (errorLine != null) {
+                //                 System.out.println(
+                //                         "Peer Err " + pInfo.peerId + ": " + errorLine);
+                //             }
+                //         }
 
-                        int exitCode = process.waitFor();
+                //         int exitCode = process.waitFor();
 
-                        if (exitCode == 0) {
-                            System.out.println("Peer " + pInfo.peerId + " has terminated successfully.");
-                        } else {
-                            System.out.println("Peer " + pInfo.peerId + " has encountered an error.");
-                        }
-                    } catch (IOException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
-                thread.start();
+                //         if (exitCode == 0) {
+                //             System.out.println("Peer " + pInfo.peerId + " has terminated successfully.");
+                //         } else {
+                //             System.out.println("Peer " + pInfo.peerId + " has encountered an error.");
+                //         }
+                //     } catch (IOException | InterruptedException e) {
+                //         e.printStackTrace();
+                //     }
+                // });
+                // thread.start();
             }
 
             System.out.println("Starting all remote peers has been attempted.");
