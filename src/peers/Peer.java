@@ -40,6 +40,7 @@ public class Peer {
     public static Bitfield bitfield;
     public static int unfinishedPeers;
     public static HashMap<Integer, Neighbor> peers = new HashMap<Integer, Neighbor>();
+    public static HashMap<Integer, Neighbor> peersBefore = new HashMap<Integer, Neighbor>();
     public static Set<Integer> finishedPeers = new HashSet<Integer>(); // might be gone
     public static HashMap<Integer, ClientHandler> clients = new HashMap<Integer, ClientHandler>();
     private int numPeers;
@@ -165,7 +166,15 @@ public class Peer {
     }
 
     private void waitForConnections() {
-
+        while(clients.size() != peersBefore.size()) {
+            try {
+                Thread.sleep(1000);
+                System.out.println("clients: " + clients.size());
+            }
+            catch (InterruptedException e) {
+                System.err.println("INTERRUPT");
+            }
+        }
     }
 
     private void closePeers() {
@@ -251,13 +260,18 @@ public class Peer {
                 int temp_port = Integer.parseInt(tokens[2]);
                 boolean hasFile = tokens[3].equals("1");
 
+                Neighbor n = new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces);
                 // At this peer process
                 if (peerID == this.peerID) {
                     this.port = Integer.parseInt(tokens[2]);
                     this.hasFile = tokens[3].equals("1");
                     this.validPeerID = true;
                 } else {
-                    peers.put(peerID, new Neighbor(peerID, pAddress, temp_port, hasFile, numPieces));
+                    peers.put(peerID, n);
+                }
+
+                if (peerID < this.peerID) {
+                    peersBefore.put(peerID, n);
                 }
             }
             in.close();
@@ -273,7 +287,8 @@ public class Peer {
 
     // Method to connect to peers before
     private void createClients() {
-        for (Map.Entry<Integer, Neighbor> entry : peers.entrySet()) {
+        for (Map.Entry<Integer, Neighbor> entry : peersBefore.entrySet()) {
+
             Socket clientSocket;
             try {
                 Neighbor neighbor = entry.getValue();
@@ -298,6 +313,7 @@ public class Peer {
                 ch.start();
 
             } catch (UnknownHostException ex) {
+                System.out.println("Server " + entry.getValue().peerID + "has not started yet");
                 throw new RuntimeException(ex);
             } catch (Exception e) {
                 // errorLogging(e, peerID);

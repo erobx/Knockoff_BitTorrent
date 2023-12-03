@@ -15,7 +15,7 @@ public class MsgNotInt extends Message {
         String logMessage = String.format("NOT_INTERESTED message received from %s at %s", senderID, receiverID);
         System.out.println(logMessage);
 
-        PeerLogger.ReceiveNotInterestedMessage(receiverID, receiverID);
+        PeerLogger.ReceiveNotInterestedMessage(receiverID, senderID);
 
         setPeerInterested(senderID, false);
     }
