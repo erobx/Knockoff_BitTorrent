@@ -22,7 +22,6 @@ import messages.MsgNotInt;
 import messages.MsgPiece;
 import messages.MsgRequest;
 import messages.MsgUnchoke;
-import messages.Handshake.Result;
 import messages.Message.MessageType;
 
 public class Peer {
@@ -275,8 +274,9 @@ public class Peer {
     private void createClients() {
         for (Map.Entry<Integer, Neighbor> entry : peersBefore.entrySet()) {
             Socket clientSocket;
+            Neighbor neighbor;
             try {
-                Neighbor neighbor = entry.getValue();
+                neighbor = entry.getValue();
                 clientSocket = new Socket(neighbor.hostname, neighbor.port);
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
@@ -284,18 +284,24 @@ public class Peer {
                 throw new RuntimeException(e);
             }
 
-            // Send handshake
-            int running = -1;
-            while (running != 0) {
-                try {
-                    running = Handshake.clientHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(), peerID,
-                            entry.getValue().peerID);
+            Handshake handshake = new Handshake("P2PFILESHARINGPROJ", neighbor.peerID);
+            try {
+                // Sending Handshake
+                handshake.serialize(clientSocket.getOutputStream());
+                PeerLogger.TCPSendMessage(peerID, neighbor.peerID);
 
-                } catch (IOException ex) {
-                    System.err.println("This is the error");
-                    ex.printStackTrace();
-                }
+                // Receiving Handshake
+                BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                String msgString = in.readLine();
+                Handshake reply = Handshake.deserialize(msgString.getBytes());
+                int senderID = reply.getSenderID();
+                PeerLogger.TCPReceiveMessage(senderID, peerID);
+
+
+            } catch (IOException e) {
+                PeerLogger.Error(neighbor.peerID, "IO Exception");
             }
+
 
             // Handle clients
             ClientHandler ch = new ClientHandler(clientSocket, entry.getValue().peerID, this);
@@ -309,10 +315,10 @@ public class Peer {
 
     private void updatePreferred() throws IOException {
         // Determine preferred peers to unchoke based on download progress
-        prefPeers.clear();
         if (!hasFile) {
             // Create a priority queue to store interested peers
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
+            prefPeers.clear();
 
             // Iterate over all peers to identify interested ones
             for (Neighbor peer : peers.values()) {

@@ -7,16 +7,17 @@ import javax.sound.midi.Receiver;
 
 import util.PeerLogger;
 
+import java.nio.ByteBuffer;
+
 public class Handshake implements Serializable {
     private String header;
     private byte[] zeros = new byte[10];
     private int senderPID;
     private int receiverPID;
 
-    public Handshake(String header, int senderPID, int receiverPID) {
+    public Handshake(String header, int senderPID) {
         this.header = header;
         this.senderPID = senderPID;
-        this.receiverPID = receiverPID;
     }
 
     public String getHeader() {
@@ -32,97 +33,90 @@ public class Handshake implements Serializable {
     }
 
     public void serialize(OutputStream out) throws IOException {
-        DataOutputStream dataOutputStream = new DataOutputStream(out);
+        BufferedWriter output = new BufferedWriter(new OutputStreamWriter(out));
         String header = "P2PFILESHARINGPROJ";
 
-        dataOutputStream.writeUTF(header);
-        dataOutputStream.write(zeros);
-        dataOutputStream.writeInt(senderPID);
+        ByteBuffer buffer = ByteBuffer.allocate(32);
 
-        dataOutputStream.flush();
+        buffer.put(header.getBytes());
+        buffer.put(zeros);
+        buffer.putInt(senderPID);
+
+        output.write(new String(buffer.array()));
+        output.newLine();
+        output.flush();
     }
 
-    public static Handshake deserialize(InputStream in, int senderPID) throws IOException {
-        DataInputStream dataInputStream = new DataInputStream(in);
+    public static Handshake deserialize(byte[] messageBytes) throws IOException {
 
-        String header = dataInputStream.readUTF();
-        byte[] zeros = new byte[10];
-        dataInputStream.readFully(zeros);
-        int receiverID = dataInputStream.readInt();
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
 
-        Handshake msg = new Handshake(header, receiverID, senderPID);
-        return msg;
+        // Read the header 
+        String header = byteArrayInputStream.readNBytes(18).toString();
+        // Read the zeros 
+        byte[] zeros = byteArrayInputStream.readNBytes(10);
+        // Read the rest of the bytes as payload
+        int receiverID = Message.byteArrayToInt(byteArrayInputStream.readNBytes(4));
+
+        return new Handshake(header, receiverID);
     }
 
-    /**
-     * Process for serverside handshaking
-     * 
-     * @param in
-     * @param out
-     * @param peerID
-     * @return peerID of accecpted handshake or -1 if invalid handshake;
-     */
-    public static int serverHandshake(InputStream in, OutputStream out, int senderPID) {
-        Handshake clientHandshake = receiveHandshake(in, senderPID);
-        if (clientHandshake.header.equals("P2PFILESHARINGPROJ")) {
-            // System.out.println("Client Handshake received from " +
-            // clientHandshake.senderPID);
+    // /**
+    //  * Process for serverside handshaking
+    //  * 
+    //  * @param in
+    //  * @param out
+    //  * @param peerID
+    //  * @return peerID of accecpted handshake or -1 if invalid handshake;
+    //  */
+    // public static int serverHandshake(InputStream in, OutputStream out, int senderPID) {
+    //     Handshake clientHandshake = receiveHandshake(in, senderPID);
+    //     if (clientHandshake.header.equals("P2PFILESHARINGPROJ")) {
+    //         // System.out.println("Client Handshake received from " +
+    //         // clientHandshake.senderPID);
 
-            sendHandshake(out, senderPID, clientHandshake.senderPID);
-            return clientHandshake.senderPID;
-        } else {
-            System.out.println("Handshake invalid");
-            return -1;
-        }
+    //         sendHandshake(out, senderPID, clientHandshake.senderPID);
+    //         return clientHandshake.senderPID;
+    //     } else {
+    //         System.out.println("Handshake invalid");
+    //         return -1;
+    //     }
+    // }
+
+    // public static int clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
+    //     sendHandshake(out, senderID, receiverID);
+    //     Handshake serverHandshake = receiveHandshake(in, senderID);
+
+    //     if (serverHandshake.getSenderID() == receiverID) {
+    //         // System.out.println("Server handshake accepted from " +
+    //         // serverHandshake.getSenderID());
+    //         PeerLogger.TCPReceiveMessage(senderID, receiverID);
+    //         return 0;
+    //     } else {
+    //         System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID);
+    //         return -1;
+    //     }
+    // }
+
+    // public static void sendHandshake(OutputStream out, int senderPID, int receiverPID) {
+    //     try {
+    //         Handshake msg = new Handshake("P2PFILESHARINGPROJ", senderPID, receiverPID);
+    //         msg.serialize(out);
+    //         PeerLogger.TCPSendMessage(senderPID, receiverPID);
+    //         // System.out.println("Sending handshake to " + receiverPID);
+    //     } catch (IOException ex) {
+    //         ex.printStackTrace();
+    //     }
+    // }
+
+    // public static Handshake receiveHandshake(InputStream in, int senderPID) {
+    //     try {
+    //         Handshake msg = Handshake.deserialize(in, senderPID);
+    //         // System.out.println("Receiving handshake from " + msg.getSenderID());
+    //         return msg;
+    //     } catch (IOException ex) {
+    //         ex.printStackTrace();
+    //     }
+    //     return null;
+    // }
     }
-
-    public static int clientHandshake(InputStream in, OutputStream out, int senderID, int receiverID) {
-        sendHandshake(out, senderID, receiverID);
-        Handshake serverHandshake = receiveHandshake(in, senderID);
-
-        if (serverHandshake.getSenderID() == receiverID) {
-            // System.out.println("Server handshake accepted from " +
-            // serverHandshake.getSenderID());
-            PeerLogger.TCPReceiveMessage(senderID, receiverID);
-            return 0;
-        } else {
-            System.out.println("HANDSHAKE DENIED: " + serverHandshake.getSenderID() + "-> " + receiverID);
-            return -1;
-        }
-    }
-
-    public static void sendHandshake(OutputStream out, int senderPID, int receiverPID) {
-        try {
-            Handshake msg = new Handshake("P2PFILESHARINGPROJ", senderPID, receiverPID);
-            msg.serialize(out);
-            PeerLogger.TCPSendMessage(senderPID, receiverPID);
-            // System.out.println("Sending handshake to " + receiverPID);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public static Handshake receiveHandshake(InputStream in, int senderPID) {
-        try {
-            Handshake msg = Handshake.deserialize(in, senderPID);
-            // System.out.println("Receiving handshake from " + msg.getSenderID());
-            return msg;
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-
-    public class Result {
-        boolean valid;
-        int senderPID;
-        int receiverPID;
-
-        public Result(boolean valid, int senderPID, int receiverPID) {
-            this.valid = valid;
-            this.senderPID = senderPID;
-            this.receiverPID = receiverPID;
-        }
-
-    }
-}

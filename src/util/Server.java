@@ -35,7 +35,9 @@ public class Server extends Thread {
                     // send through ServerSocket output
                     BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                     String msgString = in.readLine();
-                    Message m = Message.getMessage(msgString.getBytes(), senderID, peerID);
+                    Handshake handshake = Handshake.deserialize(msgString.getBytes());
+                    senderID = handshake.getSenderID();
+                    PeerLogger.TCPReceiveMessage(peerID, senderID);
                     
                     // Handshake.sendHandshake(, senderID, senderID);
                     // senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(),
@@ -44,9 +46,17 @@ public class Server extends Thread {
                     throw new RuntimeException(ex);
                 }
 
+                if (senderID == -1) {
+                    PeerLogger.Error(peerID, "ERROR RECEIVING HANDSHAKE");
+                }
+
                 // Create new ClientHandler
                 ClientHandler ch = new ClientHandler(clientSocket, senderID, peer);
                 Peer.clients.put(senderID, ch);
+
+                Handshake reply = new Handshake("P2PFILESHARINGPROJ", peerID);
+                reply.serialize(clientSocket.getOutputStream());
+                PeerLogger.TCPSendMessage(senderID, peerID);
 
                 ch.setDaemon(true);
                 new Thread(ch).start();

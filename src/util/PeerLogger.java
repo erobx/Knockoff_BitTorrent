@@ -110,9 +110,9 @@ public class PeerLogger {
         logger.log(Level.INFO, String.format("Peer %s makes a connection to Peer %s", pSend, pRecieve));
     }
 
-    public static void TCPReceiveMessage(int pSend, int pRecieve) {
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pSend);
-        logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pSend, pRecieve));
+    public static void TCPReceiveMessage(int pRecieve, int pSend) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pRecieve);
+        logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pRecieve, pSend));
     }
 
     public static void bitfieldMessage(int pRecieve, int pSend) { // TODO remove
