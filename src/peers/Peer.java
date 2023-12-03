@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import java.net.*;
 import java.io.*;
+import java.lang.ref.Cleaner.Cleanable;
 
 import util.Bitfield;
 import util.ClientHandler;
@@ -85,7 +86,7 @@ public class Peer {
         readConfig();
 
         PeerLogger.ClearLog(peerID);
-        PeerLogger.InitLog(peerID);
+        PeerLogger.InitLog(peerID); 
 
         // Init bitfield
         bitfield = new Bitfield(numPieces, hasFile);
@@ -284,7 +285,7 @@ public class Peer {
                 throw new RuntimeException(e);
             }
 
-            Handshake handshake = new Handshake("P2PFILESHARINGPROJ", neighbor.peerID);
+            Handshake handshake = new Handshake("P2PFILESHARINGPROJ", peerID);
             try {
                 // Sending Handshake
                 handshake.serialize(clientSocket.getOutputStream());
@@ -295,18 +296,20 @@ public class Peer {
                 String msgString = in.readLine();
                 Handshake reply = Handshake.deserialize(msgString.getBytes());
                 int senderID = reply.getSenderID();
-                PeerLogger.TCPReceiveMessage(senderID, peerID);
+                // PeerLogger.TCPReceiveMessage(senderID, peerID);
+                System.out.println("RECIEVED HANDSHAKE: " + senderID + " -> " + peerID);
 
 
             } catch (IOException e) {
                 PeerLogger.Error(neighbor.peerID, "IO Exception");
             }
 
-
             // Handle clients
             ClientHandler ch = new ClientHandler(clientSocket, entry.getValue().peerID, this);
 
             clients.put(entry.getValue().peerID, ch);
+            System.out.println("PUTTING CLIENT IN CLIENTS: " + entry.getValue().peerID);
+            System.out.println("Clients: " + clients.size());
 
             ch.setDaemon(true);
             ch.start();
@@ -419,7 +422,7 @@ public class Peer {
         toChoke.choking = true;
 
         // Create and send a Choke message
-        Message.sendMessage(MessageType.CHOKE, receiverID, peerID, null);
+        Message.sendMessage(MessageType.CHOKE, peerID, receiverID, null);
 
         System.out.println("Choking " + receiverID);
     }
@@ -438,7 +441,7 @@ public class Peer {
         toUnchoke.choking = false;
 
         // Create and send an Unchoke message
-        Message.sendMessage(MessageType.UNCHOKE, receiverID, peerID, null);
+        Message.sendMessage(MessageType.UNCHOKE, peerID, receiverID, null);
     }
 
     public void optimisticUnchoke() throws IOException {

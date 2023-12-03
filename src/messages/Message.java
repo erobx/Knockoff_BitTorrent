@@ -198,6 +198,7 @@ public abstract class Message implements Serializable {
 
     public static void sendMessage(Message.MessageType type, int senderID, int receiverID, byte[] payload)
             throws IOException {
+        System.out.println("ATTEMPTING TO SEND A MESSAGE: " + senderID + " -> " + receiverID);
         util.ClientHandler ch = Peer.clients.get(senderID);
         if (ch == null) {
             throw new RuntimeException("Client receiver ID Cannot be found");

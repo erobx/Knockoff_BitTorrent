@@ -116,7 +116,7 @@ public class PeerLogger {
     }
 
     public static void bitfieldMessage(int pRecieve, int pSend) { // TODO remove
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pRecieve);
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pSend);
         logger.log(Level.INFO, String.format("Peer %s has the optimistically unchoked neighbor %s", pRecieve, pSend));
     }
 
@@ -166,6 +166,7 @@ public class PeerLogger {
 
     public static void DownloadPieceMessage(int pRecieve, int pSend, int pieceIndex, int pieceCount) {
         Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pRecieve);
+        System.out.println(Logger.getGlobal().toString());
         logger.log(Level.INFO, String.format("Peer %s has downloaded the piece %d from %s. Now the number" +
                 " of pieces it has is %d", pRecieve, pieceIndex, pSend, pieceCount));
     }

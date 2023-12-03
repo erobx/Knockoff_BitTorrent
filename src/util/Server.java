@@ -37,6 +37,7 @@ public class Server extends Thread {
                     String msgString = in.readLine();
                     Handshake handshake = Handshake.deserialize(msgString.getBytes());
                     senderID = handshake.getSenderID();
+                    System.out.println("Sender ID: " + senderID);
                     PeerLogger.TCPReceiveMessage(peerID, senderID);
                     
                     // Handshake.sendHandshake(, senderID, senderID);
@@ -53,16 +54,19 @@ public class Server extends Thread {
                 // Create new ClientHandler
                 ClientHandler ch = new ClientHandler(clientSocket, senderID, peer);
                 Peer.clients.put(senderID, ch);
+                System.out.println("PUTTING CLIENT IN CLIENTS: " + senderID);
+                System.out.println("Clients: " + Peer.clients.size());
 
                 Handshake reply = new Handshake("P2PFILESHARINGPROJ", peerID);
                 reply.serialize(clientSocket.getOutputStream());
-                PeerLogger.TCPSendMessage(senderID, peerID);
+                // PeerLogger.TCPSendMessage(senderID, peerID);
+                System.out.println("SENT HANDSHAKE: " + peerID + " -> " + senderID);
 
                 ch.setDaemon(true);
                 new Thread(ch).start();
 
                 if (!Peer.bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
-                    Message.sendMessage(MessageType.BITFIELD, senderID, this.peerID,
+                    Message.sendMessage(MessageType.BITFIELD, this.peerID, senderID,
                             Peer.bitfield.getBitfield());
                 }
             }

@@ -1,6 +1,7 @@
 package messages;
 
 import java.io.*;
+import java.net.MulticastSocket;
 import java.security.SecureRandom;
 
 import javax.sound.midi.Receiver;
@@ -40,9 +41,10 @@ public class Handshake implements Serializable {
 
         buffer.put(header.getBytes());
         buffer.put(zeros);
-        buffer.putInt(senderPID);
+        buffer.put(String.valueOf(senderPID).getBytes());
 
-        output.write(new String(buffer.array()));
+        String message = new String(buffer.array());
+        output.write(message);
         output.newLine();
         output.flush();
     }
@@ -50,15 +52,21 @@ public class Handshake implements Serializable {
     public static Handshake deserialize(byte[] messageBytes) throws IOException {
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(byteArrayInputStream));
 
+        String message = reader.readLine();
         // Read the header 
-        String header = byteArrayInputStream.readNBytes(18).toString();
+        //String header = byteArrayInputStream.readNBytes(18).toString();
+        String header = message.substring(0, 18);
         // Read the zeros 
-        byte[] zeros = byteArrayInputStream.readNBytes(10);
+        // byte[] zeros = byteArrayInputStream.readNBytes(10);
+        String zeros = message.substring(19, 27);
         // Read the rest of the bytes as payload
-        int receiverID = Message.byteArrayToInt(byteArrayInputStream.readNBytes(4));
-
-        return new Handshake(header, receiverID);
+        int senderID = Integer.parseInt(message.substring(28, 32));
+        //int receiverID = Integer.parseInt(message.substring(28,32));
+        // byte[] idBytes = byteArrayInputStream.readNBytes(4);
+        //int receiverID = Message.byteArrayToInt(idBytes);
+        return new Handshake(header, senderID);
     }
 
     // /**
