@@ -59,7 +59,7 @@ public class Server extends Thread {
 
                 Handshake reply = new Handshake("P2PFILESHARINGPROJ", peerID);
                 reply.serialize(clientSocket.getOutputStream());
-                // PeerLogger.TCPSendMessage(senderID, peerID);
+                PeerLogger.TCPSendMessage(peerID, senderID);
                 System.out.println("SENT HANDSHAKE: " + peerID + " -> " + senderID);
 
                 ch.setDaemon(true);

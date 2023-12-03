@@ -114,23 +114,23 @@ public class Peer {
             MessageObj messageObj = null;
             try {
                 // try to get a message from buffer for 5 seconds
-                messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
+                messageObj = messageQueue.poll(1, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 System.out.println("Failed to get message");
                 // throw new RuntimeException(e);
             }
 
             // check if enough time has passed for preferedNeighbors
-            if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
-                updatePreferred();
-                lastPreferredUpdateTime = System.currentTimeMillis();
-            }
+            // if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
+            //     updatePreferred();
+            //     lastPreferredUpdateTime = System.currentTimeMillis();
+            // }
 
             // check if enough time has passed for optimistically unchoked
-            if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
-                optimisticUnchoke();
-                lastOpUnchokeUpdateTime = System.currentTimeMillis();
-            }
+            // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
+            //     optimisticUnchoke();
+            //     lastOpUnchokeUpdateTime = System.currentTimeMillis();
+            // }
 
             // if there is a message do the thing
             if (messageObj != null) {
@@ -296,7 +296,7 @@ public class Peer {
                 String msgString = in.readLine();
                 Handshake reply = Handshake.deserialize(msgString.getBytes());
                 int senderID = reply.getSenderID();
-                // PeerLogger.TCPReceiveMessage(senderID, peerID);
+                PeerLogger.TCPReceiveMessage(peerID, neighbor.peerID);
                 System.out.println("RECIEVED HANDSHAKE: " + senderID + " -> " + peerID);
 
 
