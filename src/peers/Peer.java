@@ -96,7 +96,7 @@ public class Peer {
             if (!Peer.bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
                 try {
                     Message.sendMessage(MessageType.BITFIELD, this.peerID, entry.getValue().peerID,
-                        Peer.bitfield.getBitfield());
+                            Peer.bitfield.getBitfield());
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -109,7 +109,7 @@ public class Peer {
         readConfig();
 
         PeerLogger.ClearLog(peerID);
-        PeerLogger.InitLog(peerID); 
+        PeerLogger.InitLog(peerID);
 
         // Init bitfield
         bitfield = new Bitfield(numPieces, hasFile);
@@ -139,7 +139,7 @@ public class Peer {
 
             // check if there's a message for me
             MessageObj messageObj = null;
-            
+
             try {
                 // try to get a message from buffer for 5 seconds
                 messageObj = messageQueue.poll(1, TimeUnit.SECONDS);
@@ -149,15 +149,17 @@ public class Peer {
             }
 
             // check if enough time has passed for preferedNeighbors
-            // if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
-            //     updatePreferred();
-            //     lastPreferredUpdateTime = System.currentTimeMillis();
+            // if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >=
+            // updatePrefInterval) {
+            // updatePreferred();
+            // lastPreferredUpdateTime = System.currentTimeMillis();
             // }
 
             // check if enough time has passed for optimistically unchoked
-            // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >= opUnchokeInterval) {
-            //     optimisticUnchoke();
-            //     lastOpUnchokeUpdateTime = System.currentTimeMillis();
+            // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >=
+            // opUnchokeInterval) {
+            // optimisticUnchoke();
+            // lastOpUnchokeUpdateTime = System.currentTimeMillis();
             // }
 
             // if there is a message do the thing
@@ -376,8 +378,6 @@ public class Peer {
                 }
             }
 
-            PeerLogger.PrefNeighborMessage(peerID, prefPeers);
-
             // Choke all remaining interested peers
             while (interestedPeersQueue.peek() != null) {
                 Neighbor chokedPeer = interestedPeersQueue.poll();
@@ -392,17 +392,17 @@ public class Peer {
             // The peer has downloaded the whole file so unchoke and choke randomly since
             // they don't receive pieces
             Random rand = new Random();
-            Integer[] peerIDs = new Integer[peers.size()];
+            Integer[] peerIDs = new Integer[peers.size()]; // make an array
             peerIDs = peers.keySet().toArray(peerIDs);
-            knuthShuffle(peerIDs);
+            knuthShuffle(peerIDs); // shuffle the array to get randomness
 
-            // int nPrefDex = 0;
+            int numCurrentPrefered = 0;
 
             // Iterate over all peers to unchoke preferred ones randomly
             for (int i = 0; i < peerIDs.length; i++) {
                 Neighbor peer = peers.get(peerIDs[i]);
                 if (peer != null) {
-                    if (peer.peerInterested) {
+                    if (peer.peerInterested && numCurrentPrefered < numPrefNeighbors) {
                         prefPeers.add(peer.peerID);
                         unchoke(peer.peerID);
                     } else {
@@ -415,10 +415,8 @@ public class Peer {
                     System.err.println("Error! Unconnected peer");
                 }
             }
-
-            PeerLogger.PrefNeighborMessage(peerID, prefPeers);
         }
-
+        PeerLogger.PrefNeighborMessage(peerID, prefPeers);
     }
 
     public static void knuthShuffle(Integer[] array) {
@@ -443,11 +441,6 @@ public class Peer {
 
         // Retrieve the NeighborPeer corresponding to the specified receiverID
         Neighbor toChoke = peers.get(receiverID);
-
-        // If not yet connected to this peer, return
-        if (!toChoke.connected) {
-            return;
-        }
 
         // Update the choked status of the NeighborPeer
         toChoke.choking = true;
