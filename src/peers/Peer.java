@@ -99,8 +99,6 @@ public class Peer {
         // Establish TCP connections with all peers before
         createClients();
 
-        waitForConnections();
-
         unfinishedPeers = numPeers;
         lastTimeoutCheck = System.currentTimeMillis();
         lastPreferredUpdateTime = System.currentTimeMillis();
@@ -163,18 +161,6 @@ public class Peer {
         }
 
         closePeers();
-    }
-
-    private void waitForConnections() {
-        while(clients.size() != peersBefore.size()) {
-            try {
-                Thread.sleep(1000);
-                System.out.println("clients: " + clients.size());
-            }
-            catch (InterruptedException e) {
-                System.err.println("INTERRUPT");
-            }
-        }
     }
 
     private void closePeers() {
@@ -323,10 +309,10 @@ public class Peer {
 
     private void updatePreferred() throws IOException {
         // Determine preferred peers to unchoke based on download progress
+        prefPeers.clear();
         if (!hasFile) {
             // Create a priority queue to store interested peers
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
-            prefPeers.clear();
 
             // Iterate over all peers to identify interested ones
             for (Neighbor peer : peers.values()) {

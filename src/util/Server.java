@@ -32,8 +32,14 @@ public class Server extends Thread {
                 // Wait for handshake
                 int senderID = -1;
                 try {
-                    senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(),
-                            peerID);
+                    // send through ServerSocket output
+                    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    String msgString = in.readLine();
+                    Message m = Message.getMessage(msgString.getBytes(), senderID, peerID);
+                    
+                    // Handshake.sendHandshake(, senderID, senderID);
+                    // senderID = Handshake.serverHandshake(clientSocket.getInputStream(), clientSocket.getOutputStream(),
+                    //         peerID);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
