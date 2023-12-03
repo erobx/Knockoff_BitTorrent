@@ -47,8 +47,10 @@ public class ClientHandler extends Thread {
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-        } 
+        }
     }
+
+    
 
     public Peer getPeer() {
         return thisPeer;

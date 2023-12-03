@@ -10,6 +10,7 @@ import javax.swing.plaf.PanelUI;
 
 import peers.Peer;
 import util.ClientHandler;
+import util.PeerLogger;
 
 public abstract class Message implements Serializable {
     /*
@@ -81,14 +82,14 @@ public abstract class Message implements Serializable {
         ByteBuffer buffer = ByteBuffer.allocate(4 + 1 + length);
 
         buffer.putInt(length);
-
         buffer.put(type);
 
         if (payload != null) {
             buffer.put(payload, 0, payload.length);
         }
 
-        output.write(new String(buffer.array()));
+        String message = new String(buffer.array());
+        output.write(message);
         output.newLine();
         output.flush();
     }
@@ -142,24 +143,30 @@ public abstract class Message implements Serializable {
 
     public static Message getMessage(byte[] messageBytes, int senderID, int receiverID) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(messageBytes);
-        DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(byteArrayInputStream));
+
+        String input = reader.readLine();
+        System.out.println("MESSAGE INPUT: " + input + " of length " + input.length());
 
         // Read the int (length)
-        int length = dataInputStream.readInt();
+        int length = byteArrayToInt(input.substring(0, 4).getBytes());
+        System.out.println("MESSAGE LEN: " + length);
 
         // Read the byte (type)
-        byte type = dataInputStream.readByte();
+        byte type = (byte) (input.charAt(5) - '0');
+        System.out.println("MESSAGE TYPE: " + type);
 
         // Read the rest of the bytes as payload
         byte[] payload = new byte[length];
 
         if (length > 0) {
-            dataInputStream.readFully(payload);
+            String pString = input.substring(7, length - 1);
+            payload = pString.getBytes();
+
         } else {
             payload = null;
         }
         // int index = byteArrayToInt(payload);
-
         Message message = null;
 
         switch (MessageType.getTypeByInt((int) type)) {
@@ -191,8 +198,10 @@ public abstract class Message implements Serializable {
             case PIECE ->
                 message = new MsgPiece(length, (byte) MessageType.PIECE.getValue(), payload, senderID, receiverID);
             // Add more cases as needed
+            default ->
+                PeerLogger.Error(receiverID, "MESSAGE NOT DESIERIALZED CORRECTLY");
         }
-
+        System.out.println("MESSAGE (" + MessageType.getTypeByInt(message.getType()) + ") is about to be handled");
         return message;
     }
 
@@ -255,7 +264,7 @@ public abstract class Message implements Serializable {
 
         if (msg != null) {
             msg.serialize(ch.getSocket().getOutputStream());
-            System.out.println(type.toString() + " message sent from " + receiverID + " to " + senderID);
+            System.out.println(type.toString() + " message sent from " + senderID + " to " + receiverID);
         }
 
     }

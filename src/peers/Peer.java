@@ -81,6 +81,16 @@ public class Peer {
         }
     }
 
+    private void waitForConnections() {
+        while (clients.size() < numPeers - 1) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void run() throws Exception {
         // Read config files
         readConfig();
@@ -99,7 +109,9 @@ public class Peer {
         // Establish TCP connections with all peers before
         createClients();
 
-        unfinishedPeers = numPeers;
+        waitForConnections();
+
+        unfinishedPeers = numPeers; // might need to be numPeers - 1
         lastTimeoutCheck = System.currentTimeMillis();
         lastPreferredUpdateTime = System.currentTimeMillis();
         lastOpUnchokeUpdateTime = System.currentTimeMillis();
@@ -112,6 +124,7 @@ public class Peer {
 
             // check if there's a message for me
             MessageObj messageObj = null;
+            
             try {
                 // try to get a message from buffer for 5 seconds
                 messageObj = messageQueue.poll(1, TimeUnit.SECONDS);

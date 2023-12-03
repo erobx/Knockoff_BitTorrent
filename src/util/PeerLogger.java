@@ -115,9 +115,9 @@ public class PeerLogger {
         logger.log(Level.INFO, String.format("Peer %s is connected from Peer %s", pSend, pRecieve));
     }
 
-    public static void bitfieldMessage(int pRecieve, int pSend) { // TODO remove
-        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pSend);
-        logger.log(Level.INFO, String.format("Peer %s has the optimistically unchoked neighbor %s", pRecieve, pSend));
+    public static void bitfieldMessage(int pSend, int pRecieve) { // TODO remove
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pRecieve);
+        logger.log(Level.INFO, String.format("Peer %s has received a bitfield from %s", pRecieve, pSend));
     }
 
     public static void PrefNeighborMessage(int pid1, Vector<Integer> preferredNeighbors) {

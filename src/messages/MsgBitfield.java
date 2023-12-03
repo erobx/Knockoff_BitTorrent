@@ -25,7 +25,8 @@ public class MsgBitfield extends Message {
         // receiverID + " : "
         // + Arrays.toString(receivedBitfield.getBitfield()));
 
-        PeerLogger.bitfieldMessage(receiverID, senderID);
+        System.out.println("BITFIELD RECEIVED FROM " + senderID);
+        PeerLogger.bitfieldMessage(senderID, receiverID);
 
         // Check if bitfield has the pieces that receiver wants
         Bitfield myBitfield = Peer.bitfield;

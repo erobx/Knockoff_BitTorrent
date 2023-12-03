@@ -36,7 +36,8 @@ public class MsgHave extends Message {
         Bitfield neighborBitfield = neighbor.bitfield;
 
         if (neighborBitfield.isFull()) {
-            Peer.unfinishedPeers--;
+            if (!neighbor.isDone == true) 
+                Peer.unfinishedPeers--;
             neighbor.isDone = true;
         }
     }

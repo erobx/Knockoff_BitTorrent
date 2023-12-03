@@ -63,7 +63,7 @@ public class Server extends Thread {
                 System.out.println("SENT HANDSHAKE: " + peerID + " -> " + senderID);
 
                 ch.setDaemon(true);
-                new Thread(ch).start();
+                ch.start();
 
                 if (!Peer.bitfield.isEmpty()) { // if the bitfield is non-empty send bitfield msg
                     Message.sendMessage(MessageType.BITFIELD, this.peerID, senderID,
@@ -75,6 +75,7 @@ public class Server extends Thread {
         } finally {
             try {
                 listener.close();
+                
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
