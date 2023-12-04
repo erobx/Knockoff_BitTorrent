@@ -25,7 +25,7 @@ public class MsgHave extends Message {
         updateNeighborBitfield(neighborPeer.bitfield);
         checkAndUpdatePeerCompletion(neighborPeer);
 
-        PeerLogger.ReceiveHaveMessage(receiverID, senderID, pieceIndex);
+        // PeerLogger.ReceiveHaveMessage(receiverID, senderID, pieceIndex);
     }
 
     private void updateNeighborBitfield(Bitfield bitfield) {

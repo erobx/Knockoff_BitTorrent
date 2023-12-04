@@ -18,13 +18,8 @@ public class MsgBitfield extends Message {
         this.receivedBitfield = new Bitfield(payload);
     }
 
-    // TODO Debug and add logging
     @Override
     public void handle() throws IOException {
-        // System.out.println("BITFIELD message received from " + senderID + " at " +
-        // receiverID + " : "
-        // + Arrays.toString(receivedBitfield.getBitfield()));
-
         System.out.println("BITFIELD RECEIVED FROM " + senderID);
         PeerLogger.bitfieldMessage(senderID, receiverID);
 

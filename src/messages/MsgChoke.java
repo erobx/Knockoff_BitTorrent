@@ -12,7 +12,6 @@ public class MsgChoke extends Message {
         super(length, type, payload, senderID, receiverID);
     }
 
-    // TODO Fully implement
     @Override
     public void handle() {
         String logMessage = String.format("CHOKE message received from %s at %s", senderID, receiverID);
@@ -24,7 +23,7 @@ public class MsgChoke extends Message {
 
     private void setPeerChoking(Neighbor neighbor, boolean isChoking) {
         neighbor.peerChoking = isChoking;
-        PeerLogger.ChokeMessage(receiverID, senderID);
+        // PeerLogger.ChokeMessage(receiverID, senderID);
     }
 
 }

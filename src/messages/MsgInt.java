@@ -14,7 +14,6 @@ public class MsgInt extends Message {
         super(length, type, payload, senderID, receiverID);
     }
 
-    // TODO Fully implement
     @Override
     public void handle() throws IOException {
         String logMessage = String.format("INTERESTED message received from %s at %s", senderID, receiverID);

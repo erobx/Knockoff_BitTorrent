@@ -23,7 +23,6 @@ public class MsgPiece extends Message {
         this.piece = piecePayload.getSecond();
     }
 
-    // TODO Fully implement
     @Override
     public void handle() throws IOException {
         // Log the reception of the PIECE message
@@ -46,10 +45,10 @@ public class MsgPiece extends Message {
         myBitfield.setPiece(pieceIndex, true);
 
         // Update the interest status of peers and send HAVE messages
-        updatePeersInterest();
+        // updatePeersInterest();
 
         // Handle Part 2 of the protocol
-        handlePartTwo(sendingPeer, myBitfield);
+        // handlePartTwo(sendingPeer, myBitfield);
     }
 
     // Method to update the data rate of a peer
@@ -85,7 +84,7 @@ public class MsgPiece extends Message {
 
     // Method to send a HAVE message to a peer
     private void sendMessageHave(int receiverID, int senderID, int pieceIndex) throws IOException {
-        Message.sendMessage(MessageType.HAVE, senderID, receiverID, intToByteArray(pieceIndex));
+        // Message.sendMessage(MessageType.HAVE, receiverID, senderID, intToByteArray(pieceIndex));
     }
 
     // Method to handle Part 2 of the protocol
@@ -113,7 +112,7 @@ public class MsgPiece extends Message {
 
     // Method to send a REQUEST message to a peer
     private void sendMessageRequest(int receiverID, int senderID, int pieceIndex) throws IOException {
-        Message.sendMessage(MessageType.REQUEST, senderID, receiverID, intToByteArray(pieceIndex));
+        Message.sendMessage(MessageType.REQUEST, receiverID, senderID, intToByteArray(pieceIndex));
     }
 
     // Method to write a piece to a file

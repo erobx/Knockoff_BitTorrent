@@ -9,7 +9,6 @@ public class MsgNotInt extends Message {
         super(length, type, payload, senderID, receiverID);
     }
 
-    // TODO Fully implement
     @Override
     public void handle() {
         String logMessage = String.format("NOT_INTERESTED message received from %s at %s", senderID, receiverID);
