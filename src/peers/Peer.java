@@ -419,6 +419,7 @@ public class Peer {
                     if (peer.peerInterested && numCurrentPrefered < numPrefNeighbors) {
                         prefPeers.add(peer.peerID);
                         unchoke(peer.peerID);
+                        numCurrentPrefered++;
                     } else {
                         // Choke all remaining peers
                         choke(peer.peerID);
@@ -490,7 +491,6 @@ public class Peer {
          */
 
         // Get a random order of peer IDs
-        Random rand = new Random();
         Integer[] peerIDs = new Integer[peers.size()];
         peerIDs = peers.keySet().toArray(peerIDs);
         knuthShuffle(peerIDs);
