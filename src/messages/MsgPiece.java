@@ -48,7 +48,7 @@ public class MsgPiece extends Message {
         updatePeersInterest();
 
         // Handle Part 2 of the protocol
-        // handlePartTwo(sendingPeer, myBitfield);
+        handlePartTwo(sendingPeer, myBitfield);
     }
 
     // Method to update the data rate of a peer
@@ -67,7 +67,7 @@ public class MsgPiece extends Message {
 
             // If the peer has an interesting piece, send a HAVE message
             if (hasInterestingPiece) {
-                sendMessageHave(receiverID, senderID, pieceIndex);
+                sendMessageHave(receiverID, peer.peerID, pieceIndex);
             }
         }
     }
@@ -83,7 +83,7 @@ public class MsgPiece extends Message {
     }
 
     // Method to send a HAVE message to a peer
-    private void sendMessageHave(int receiverID, int senderID, int pieceIndex) throws IOException {
+    private void sendMessageHave(int senderID, int receiverID, int pieceIndex) throws IOException {
         Message.sendMessage(MessageType.HAVE, senderID, receiverID, intToByteArray(pieceIndex));
     }
 

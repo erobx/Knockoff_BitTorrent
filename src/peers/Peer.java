@@ -495,7 +495,6 @@ public class Peer {
          */
 
         // Get a random order of peer IDs
-        Random rand = new Random();
         Integer[] peerIDs = new Integer[peers.size()];
         peerIDs = peers.keySet().toArray(peerIDs);
         knuthShuffle(peerIDs);
