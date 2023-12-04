@@ -65,6 +65,19 @@ public class Peer {
         this.peerID = peerID;
     }
 
+    class DowloadComparator implements Comparator<Neighbor>{
+             
+        // Overriding compare()method of Comparator 
+                    // for descending order of cgpa
+        public int compare(Neighbor n1, Neighbor n2) {
+            if (n1.dataRate < n2.dataRate)
+                return 1;
+            else if (n1.dataRate > n2.dataRate)
+                return -1;
+                            return 0;
+            }
+    }
+
     /*
      * Method called by peerProcess to control main loop.
      */
@@ -141,7 +154,7 @@ public class Peer {
 
             try {
                 // try to get a message from buffer for 5 seconds
-                messageObj = messageQueue.poll(1, TimeUnit.SECONDS);
+                messageObj = messageQueue.poll(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 System.out.println("Failed to get message");
                 // throw new RuntimeException(e);
@@ -353,7 +366,7 @@ public class Peer {
         prefPeers.clear();
         if (!hasFile) {
             // Create a priority queue to store interested peers
-            PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
+            PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<Neighbor>(new DowloadComparator());
 
             // Iterate over all peers to identify interested ones
             if (!peers.isEmpty()) {
@@ -365,13 +378,14 @@ public class Peer {
                 // Reset dataRate for each peer
                 peer.dataRate = 0;
             }
-
                 // Unchoke the top number of prefered interested peers
                 for (int i = 0; i < numPrefNeighbors; i++) {
                     Neighbor preferredPeer = interestedPeersQueue.poll();
                     if (preferredPeer != null) {
                         prefPeers.add(preferredPeer.peerID);
-                        unchoke(preferredPeer.peerID);
+                        if (!preferredPeer.isChoking()){
+                            unchoke(preferredPeer.peerID);
+                        }
                     } else {
                         System.err.println("Error! Trying to add an unconnected peer to preferred peers");
                     }
@@ -416,7 +430,7 @@ public class Peer {
                 }
             }
         }
-        PeerLogger.PrefNeighborMessage(peerID, prefPeers);
+        PeerLogger.PrefNeighborMessage(this.peerID, prefPeers);
     }
 
     public static void knuthShuffle(Integer[] array) {
