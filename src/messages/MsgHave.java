@@ -18,14 +18,13 @@ public class MsgHave extends Message {
     // TODO Debug
     @Override
     public void handle() {
-        String logMessage = String.format("HAVE message received from %s at %s", senderID, receiverID);
-        System.out.println(logMessage);
-
+        // String logMessage = String.format("HAVE message received from %s at %s", senderID, receiverID);
+        // System.out.println(logMessage);
         Neighbor neighborPeer = Peer.peers.get(senderID);
         updateNeighborBitfield(neighborPeer.bitfield);
         checkAndUpdatePeerCompletion(neighborPeer);
 
-        PeerLogger.ReceiveHaveMessage(receiverID, senderID, pieceIndex);
+        // PeerLogger.ReceiveHaveMessage(receiverID, senderID, pieceIndex);
     }
 
     private void updateNeighborBitfield(Bitfield bitfield) {

@@ -127,7 +127,7 @@ public class PeerLogger {
         StringJoiner neighborsJoiner = new StringJoiner(", ");
         preferredNeighbors.forEach(neighbor -> neighborsJoiner.add(String.valueOf(neighbor)));
         String neighbors = neighborsJoiner.toString();
-    
+        
         logger.log(Level.INFO, String.format("Peer %s has the preferred neighbors %s", pid1, neighbors));
     }
 

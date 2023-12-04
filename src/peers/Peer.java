@@ -31,7 +31,7 @@ public class Peer {
     public final int peerID;
     private String fileName;
     private int fileSize;
-    private int pieceSize;
+    public static int pieceSize;
     public static int numPieces;
     public static int lastPieceSize;
     private boolean hasFile;
@@ -168,6 +168,10 @@ public class Peer {
 
                 try {
                     Message m = Message.getMessage(messageBytes, senderID, peerID);
+                    if (m.getPayload() != null) {
+                        System.out.println("Type value: " + m.getType());
+                        System.out.println("Payload value: " + Message.byteArrayToInt(m.getPayload()));
+                    }
                     m.handle(); // will handle based on what message it is
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
