@@ -22,8 +22,11 @@ public class MsgInt extends Message {
 
         PeerLogger.ReceiveInterestedMessage(receiverID, senderID);
 
-        Neighbor sendingPeer = Peer.peers.get(senderID);
-        sendingPeer.peerInterested = true;
+        Neighbor newNeighbor = Peer.peers.get(senderID);
+        newNeighbor.setPeerInterested(true);
+        Peer.peers.put(senderID, newNeighbor);
+        // Peer.peers.get(senderID).setPeerInterested(true);
+        // sendingPeer.peerInterested = true;
         // setPeerChoking(sendingPeer, true);
 
         // requestRandomPiece(sendingPeer.bitfield);

@@ -129,10 +129,9 @@ public class Peer {
         unfinishedPeers = numPeers; // might need to be numPeers - 1
         lastTimeoutCheck = System.currentTimeMillis();
         lastPreferredUpdateTime = System.currentTimeMillis();
-        lastOpUnchokeUpdateTime = System.currentTimeMillis();
+        lastOpUnchokeUpdateTime = 0;
         // Main loop
         while (unfinishedPeers != 0) {
-
             // keep track of total run time
             // (can be removed once termination condition is created)
             timeout();
@@ -148,20 +147,6 @@ public class Peer {
                 // throw new RuntimeException(e);
             }
 
-            // check if enough time has passed for preferedNeighbors
-            // if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >=
-            // updatePrefInterval) {
-            // updatePreferred();
-            // lastPreferredUpdateTime = System.currentTimeMillis();
-            // }
-
-            // check if enough time has passed for optimistically unchoked
-            // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >=
-            // opUnchokeInterval) {
-            // optimisticUnchoke();
-            // lastOpUnchokeUpdateTime = System.currentTimeMillis();
-            // }
-
             // if there is a message do the thing
             if (messageObj != null) {
 
@@ -170,7 +155,7 @@ public class Peer {
 
                 try {
                     Message m = Message.getMessage(messageBytes, senderID, peerID);
-                    m.handle(); // will handle based on what message it i
+                    m.handle(); // will handle based on what message it is
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
                     if (stackTrace.length > 0) {
@@ -188,6 +173,20 @@ public class Peer {
                     }
                 }
             }
+
+            // check if enough time has passed for preferedNeighbors
+            if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >=
+            updatePrefInterval) {
+                updatePreferred();
+                lastPreferredUpdateTime = System.currentTimeMillis();
+            }
+
+            // // check if enough time has passed for optimistically unchoked
+            // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >=
+            // opUnchokeInterval*1000) {
+            //     optimisticUnchoke();
+            //     lastOpUnchokeUpdateTime = System.currentTimeMillis();
+            // }
         }
 
         closePeers();
@@ -357,34 +356,35 @@ public class Peer {
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<>();
 
             // Iterate over all peers to identify interested ones
-            for (Neighbor peer : peers.values()) {
-                if (peer != null) {
-                    if (peer.peerInterested) {
-                        interestedPeersQueue.add(peer);
+            if (!peers.isEmpty()) {
+                for (Neighbor peer : peers.values()) {
+                if (peer.peerInterested) {
+                    interestedPeersQueue.add(peer);
+                    System.out.println("ADDED INTERESTED PEER");
+                }
+                // Reset dataRate for each peer
+                peer.dataRate = 0;
+            }
+
+                // Unchoke the top number of prefered interested peers
+                for (int i = 0; i < numPrefNeighbors; i++) {
+                    Neighbor preferredPeer = interestedPeersQueue.poll();
+                    if (preferredPeer != null) {
+                        prefPeers.add(preferredPeer.peerID);
+                        unchoke(preferredPeer.peerID);
+                    } else {
+                        System.err.println("Error! Trying to add an unconnected peer to preferred peers");
                     }
-                    // Reset dataRate for each peer
-                    peer.dataRate = 0;
                 }
-            }
 
-            // Unchoke the top number of prefered interested peers
-            for (int i = 0; i < numPrefNeighbors; i++) {
-                Neighbor preferredPeer = interestedPeersQueue.poll();
-                if (preferredPeer != null) {
-                    prefPeers.add(preferredPeer.peerID);
-                    unchoke(preferredPeer.peerID);
-                } else {
-                    System.err.println("Error! Trying to add an unconnected peer to preferred peers");
-                }
-            }
-
-            // Choke all remaining interested peers
-            while (interestedPeersQueue.peek() != null) {
-                Neighbor chokedPeer = interestedPeersQueue.poll();
-                if (chokedPeer != null) {
-                    choke(chokedPeer.peerID);
-                } else {
-                    System.err.println("Error! Trying to choke an unconnected peer");
+                // Choke all remaining interested peers
+                while (interestedPeersQueue.peek() != null) {
+                    Neighbor chokedPeer = interestedPeersQueue.poll();
+                    if (chokedPeer != null) {
+                        choke(chokedPeer.peerID);
+                    } else {
+                        System.err.println("Error! Trying to choke an unconnected peer");
+                    }
                 }
             }
 

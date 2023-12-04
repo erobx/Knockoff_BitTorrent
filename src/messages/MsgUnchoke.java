@@ -35,7 +35,7 @@ public class MsgUnchoke extends Message {
 
             int pieceIndex = getRandomUnownedPieceIndex(unchokingBitfield, myBitfield, random);
 
-            sendMessage(MessageType.REQUEST, senderID, receiverID, intToByteArray(pieceIndex));
+            sendMessage(MessageType.REQUEST, receiverID, senderID, intToByteArray(pieceIndex));
         }
 
         PeerLogger.UnchokeMessage(receiverID, unchokingPeer.peerID);

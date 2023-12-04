@@ -37,6 +37,8 @@ public class MsgBitfield extends Message {
         MessageType messageType = interested ? MessageType.INTERESTED : MessageType.NOT_INTERESTED;
 
         // Swap senderID and receiverID for the message
+        Peer.peers.get(senderID).interested = interested ? true : false;
+        
         Message.sendMessage(messageType, receiverID, senderID, null);
     }
 

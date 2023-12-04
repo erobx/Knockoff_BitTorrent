@@ -39,4 +39,66 @@ public class Neighbor implements Comparable {
         }
         return 0;
     }
+
+    public boolean isDone() {
+        return isDone;
+    }
+
+    public void setDone(boolean done) {
+        isDone = done;
+    }
+
+    // Getter and Setter for connected
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
+    // Getter and Setter for choking
+    public boolean isChoking() {
+        return choking;
+    }
+
+    public void setChoking(boolean choking) {
+        this.choking = choking;
+    }
+
+    // Getter and Setter for interested
+    public boolean isInterested() {
+        return interested;
+    }
+
+    public void setInterested(boolean interested) {
+        this.interested = interested;
+    }
+
+    // Getter and Setter for peerChoking
+    public boolean isPeerChoking() {
+        return peerChoking;
+    }
+
+    public void setPeerChoking(boolean peerChoking) {
+        this.peerChoking = peerChoking;
+    }
+
+    // Getter and Setter for peerInterested
+    public boolean isPeerInterested() {
+        return peerInterested;
+    }
+
+    public void setPeerInterested(boolean peerInterested) {
+        this.peerInterested = peerInterested;
+    }
+
+    // Getter and Setter for dataRate
+    public double getDataRate() {
+        return dataRate;
+    }
+
+    public void setDataRate(double dataRate) {
+        this.dataRate = dataRate;
+    }
 }

@@ -43,7 +43,7 @@ public class ClientHandler extends Thread {
             while ((msg = in.readLine()) != null) {
                 // System.out.println("Message length: " + msg.getBytes().length);
                 thisPeer.addToMessageQueue(msg.getBytes(), peerID);
-                System.out.println("Message added to queue");
+                // System.out.println("Message added to queue");
             }
         } catch (Exception ex) {
             Peer.errorLogging(ex, peerID);

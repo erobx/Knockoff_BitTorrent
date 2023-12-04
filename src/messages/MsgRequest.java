@@ -31,7 +31,7 @@ public class MsgRequest extends Message {
 
             byte[] piecePayload = createPiecePayload(pieceIndex, loadPiece(pieceIndex, senderID));
 
-            Message.sendMessage(MessageType.PIECE, senderID, receiverID, piecePayload);
+            Message.sendMessage(MessageType.PIECE, receiverID, senderID, piecePayload);
         }
     }
 
