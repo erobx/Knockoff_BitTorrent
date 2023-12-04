@@ -168,10 +168,6 @@ public class Peer {
 
                 try {
                     Message m = Message.getMessage(messageBytes, senderID, peerID);
-                    if (m.getPayload() != null) {
-                        System.out.println("Type value: " + m.getType());
-                        System.out.println("Payload value: " + Message.byteArrayToInt(m.getPayload()));
-                    }
                     m.handle(); // will handle based on what message it is
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
@@ -374,7 +370,7 @@ public class Peer {
 
             // Iterate over all peers to identify interested ones
             for (Neighbor peer : peers.values()) {
-                if (peer.peerInterested) {
+                if (peer.interested) {
                     interestedPeersQueue.add(peer);
                 }
                 // Reset dataRate for each peer

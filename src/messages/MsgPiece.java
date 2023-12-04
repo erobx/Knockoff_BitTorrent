@@ -76,7 +76,7 @@ public class MsgPiece extends Message {
     // Method to check if a peer has an interesting piece
     private boolean checkInterestingPiece(Bitfield peerBitfield, Bitfield myBitfield) {
         for (int i = 0; i < Peer.numPieces; i++) {
-            if (peerBitfield.hasPiece(i) && !myBitfield.hasPiece(i)) {
+            if (!peerBitfield.hasPiece(i) && myBitfield.hasPiece(i)) {
                 return true;
             }
         }
