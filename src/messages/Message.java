@@ -247,7 +247,7 @@ public abstract class Message implements Serializable {
 
             // Have - index payload TODO adjust payload
             case HAVE ->
-                msg = new MsgHave(0, (byte) type.getValue(), null, receiverID,
+                msg = new MsgHave(0, (byte) type.getValue(), payload, receiverID,
                         senderID);
             // Bitfield - bitfield payload
             case BITFIELD ->
