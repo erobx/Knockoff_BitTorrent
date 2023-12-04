@@ -1,0 +1,17 @@
+# Group 3 Project README
+
+## Team Members
+- **Evan**
+  - Implemented Handshake functionality
+  - Debugged and optimized message processing
+  - Contributed to the design and implementation of the Peer structure
+
+- **Donny**
+  - Developed a robust logging system
+  - Created utility functions in the Util module
+  - Debugged TCP communication and resolved related issues
+
+- **Vance**
+  - Implemented the Messages module
+  - Worked on the local and remote peer management
+  - Engaged in pair programming for debugging and problem-solving
