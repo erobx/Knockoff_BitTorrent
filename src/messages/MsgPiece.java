@@ -33,9 +33,6 @@ public class MsgPiece extends Message {
         // Write the received piece to the file
         // writePieceToFile(piece);
         Bitfield myBitfield = Peer.bitfield;
-        int totalNumpiece = myBitfield.getNumPieces();
-
-        PeerLogger.DownloadPieceMessage(receiverID, senderID, pieceIndex, totalNumpiece);
 
         // Get the sending peer and update its data rate
         Neighbor sendingPeer = Peer.peers.get(senderID);
@@ -43,6 +40,10 @@ public class MsgPiece extends Message {
 
         // Update the bitfield of the receiving peer
         myBitfield.setPiece(pieceIndex, true);
+
+        int totalNumpiece = myBitfield.getNumPieces();
+
+        PeerLogger.DownloadPieceMessage(receiverID, senderID, pieceIndex, totalNumpiece);
 
         // Update the interest status of peers and send HAVE messages
         updatePeersInterest();
@@ -75,7 +76,7 @@ public class MsgPiece extends Message {
     // Method to check if a peer has an interesting piece
     private boolean checkInterestingPiece(Bitfield peerBitfield, Bitfield myBitfield) {
         for (int i = 0; i < Peer.numPieces; i++) {
-            if (peerBitfield.hasPiece(i) && !myBitfield.hasPiece(i)) {
+            if (!peerBitfield.hasPiece(i) && myBitfield.hasPiece(i)) {
                 return true;
             }
         }

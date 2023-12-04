@@ -168,10 +168,6 @@ public class Peer {
 
                 try {
                     Message m = Message.getMessage(messageBytes, senderID, peerID);
-                    if (m.getPayload() != null) {
-                        System.out.println("Type value: " + m.getType());
-                        System.out.println("Payload value: " + Message.byteArrayToInt(m.getPayload()));
-                    }
                     m.handle(); // will handle based on what message it is
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
@@ -204,9 +200,9 @@ public class Peer {
             //     optimisticUnchoke();
             //     lastOpUnchokeUpdateTime = System.currentTimeMillis();
             // }
+            
+            updatePeersDone();
         }
-
-        closePeers();
     }
 
     private void closePeers() {
@@ -373,11 +369,9 @@ public class Peer {
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<Neighbor>(new DowloadComparator());
 
             // Iterate over all peers to identify interested ones
-            if (!peers.isEmpty()) {
-                for (Neighbor peer : peers.values()) {
-                if (peer.peerInterested) {
+            for (Neighbor peer : peers.values()) {
+                if (peer.interested) {
                     interestedPeersQueue.add(peer);
-                    System.out.println("ADDED INTERESTED PEER");
                 }
                 // Reset dataRate for each peer
                 peer.dataRate = 0;
@@ -539,5 +533,14 @@ public class Peer {
 
     public void addToMessageQueue(byte[] msg, int peerID) {
         messageQueue.add(new MessageObj(msg, peerID));
+    }
+
+    public void updatePeersDone() {
+        unfinishedPeers = numPeers;
+        for (Map.Entry<Integer, Neighbor> peer : peers.entrySet()) {
+            if (peer.getValue().bitfield.isFull()) {
+                unfinishedPeers--;
+            }
+        }
     }
 }
