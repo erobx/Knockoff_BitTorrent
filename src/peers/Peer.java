@@ -31,7 +31,7 @@ public class Peer {
     public final int peerID;
     private String fileName;
     private int fileSize;
-    private int pieceSize;
+    public static int pieceSize;
     public static int numPieces;
     public static int lastPieceSize;
     private boolean hasFile;

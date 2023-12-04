@@ -279,8 +279,7 @@ public abstract class Message implements Serializable {
 
     public byte[] loadPiece(int pieceIndex, int senderID) {
         // parses the specified piece into the byte array to be sent.
-
-        String fileLocation = "/src/peer_" + senderID + "/" + pieceIndex;
+        String fileLocation = "/src/" + senderID + "/thefile";
         Scanner scan;
         try {
             scan = new Scanner(new File(fileLocation));
@@ -294,6 +293,30 @@ public abstract class Message implements Serializable {
         byte[] piece = pieceBuffer.toString().getBytes();
 
         scan.close();
+
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(fileLocation, "r")) {
+            // Set the file pointer to the desired offset
+
+            // Check last piece
+            byte[] buffer;
+            if (pieceIndex == Peer.numPieces) {
+                randomAccessFile.seek(pieceIndex*Peer.lastPieceSize);
+                buffer = new byte[Peer.pieceSize];
+            } else {
+                randomAccessFile.seek(pieceIndex*Peer.pieceSize);
+                buffer = new byte[Peer.pieceSize];
+            }
+
+            // Read the specified number of bytes
+            int bytesReadNow = randomAccessFile.read(buffer);
+
+            // Process the read bytes
+            System.out.println("Bytes read: " + bytesReadNow);
+            System.out.println(new String(buffer, 0, bytesReadNow, "UTF-8")); // Assuming UTF-8 encoding
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return piece;
     }
