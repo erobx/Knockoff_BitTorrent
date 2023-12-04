@@ -194,11 +194,11 @@ public class Peer {
             }
 
             // // check if enough time has passed for optimistically unchoked
-            // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >=
-            // opUnchokeInterval*1000) {
-            // optimisticUnchoke();
-            // lastOpUnchokeUpdateTime = System.currentTimeMillis();
-            // }
+            if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >=
+            opUnchokeInterval*1000) {
+                optimisticUnchoke();
+                lastOpUnchokeUpdateTime = System.currentTimeMillis();
+            }
 
             updatePeersDone();
         }
