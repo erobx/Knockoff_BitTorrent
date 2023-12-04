@@ -277,46 +277,39 @@ public abstract class Message implements Serializable {
         throw new Exception("Handler not overriden default handler called");
     }
 
-    public byte[] loadPiece(int pieceIndex, int senderID) {
+    public byte[] loadPiece(int pieceIndex) {
         // parses the specified piece into the byte array to be sent.
-        String fileLocation = "/src/" + senderID + "/thefile";
-        Scanner scan;
-        try {
-            scan = new Scanner(new File(fileLocation));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Cannot find file: " + fileLocation, e);
-        }
-        StringBuilder pieceBuffer = new StringBuilder();
-        while (scan.hasNext()) {
-            pieceBuffer.append(scan.next());
-        }
-        byte[] piece = pieceBuffer.toString().getBytes();
+        String fileLocation = "../src/" + receiverID + "/thefile";
+        // Scanner scan;
+        // try {
+        //     scan = new Scanner(new File(fileLocation));
+        // } catch (FileNotFoundException e) {
+        //     throw new RuntimeException("Cannot find file: " + fileLocation, e);
+        // }
+        // StringBuilder pieceBuffer = new StringBuilder();
+        // while (scan.hasNext()) {
+        //     pieceBuffer.append(scan.next());
+        // }
+        // byte[] piece = pieceBuffer.toString().getBytes();
 
-        scan.close();
+        // scan.close();
 
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(fileLocation, "r")) {
-            // Set the file pointer to the desired offset
+        byte[] piece = new byte[Peer.pieceSize];
+        // try (RandomAccessFile randomAccessFile = new RandomAccessFile(fileLocation, "r")) {
+        //     // Set the file pointer to the desired offset
 
-            // Check last piece
-            byte[] buffer;
-            if (pieceIndex == Peer.numPieces) {
-                randomAccessFile.seek(pieceIndex*Peer.lastPieceSize);
-                buffer = new byte[Peer.pieceSize];
-            } else {
-                randomAccessFile.seek(pieceIndex*Peer.pieceSize);
-                buffer = new byte[Peer.pieceSize];
-            }
-
-            // Read the specified number of bytes
-            int bytesReadNow = randomAccessFile.read(buffer);
-
-            // Process the read bytes
-            System.out.println("Bytes read: " + bytesReadNow);
-            System.out.println(new String(buffer, 0, bytesReadNow, "UTF-8")); // Assuming UTF-8 encoding
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //     // Check last 
+        //     // if (pieceIndex == Peer.numPieces) {
+        //     //     piece = new byte[Peer.lastPieceSize];
+        //     //     randomAccessFile.read(piece, pieceIndex*Peer.lastPieceSize, Peer.lastPieceSize);
+        //     // } else {
+        //     //     piece = new byte[Peer.pieceSize];
+        //     //     randomAccessFile.read(piece, pieceIndex*Peer.pieceSize, Peer.pieceSize);
+        //     // }
+        //     randomAccessFile.read(piece, pieceIndex, Peer.pieceSize);
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
 
         return piece;
     }

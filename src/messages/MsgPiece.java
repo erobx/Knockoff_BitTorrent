@@ -32,8 +32,8 @@ public class MsgPiece extends Message {
 
         // Write the received piece to the file
         // writePieceToFile(piece);
-
-        int totalNumpiece = 0; // TODO set this somehow
+        Bitfield myBitfield = Peer.bitfield;
+        int totalNumpiece = myBitfield.getNumPieces();
 
         PeerLogger.DownloadPieceMessage(receiverID, senderID, pieceIndex, totalNumpiece);
 
@@ -42,11 +42,10 @@ public class MsgPiece extends Message {
         updateDataRate(sendingPeer, piece.length);
 
         // Update the bitfield of the receiving peer
-        Bitfield myBitfield = Peer.bitfield;
         myBitfield.setPiece(pieceIndex, true);
 
         // Update the interest status of peers and send HAVE messages
-        // updatePeersInterest();
+        updatePeersInterest();
 
         // Handle Part 2 of the protocol
         // handlePartTwo(sendingPeer, myBitfield);

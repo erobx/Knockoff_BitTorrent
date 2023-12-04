@@ -43,6 +43,14 @@ public class Bitfield {
         return true; // The bitfield is empty
     }
 
+    public int getNumPieces() {
+        int count = 0;
+        for (byte b : bitfield) {
+            if (b != 0) count++;
+        }
+        return count;
+    }
+
     /*
      * public boolean hasPiece(int pieceIndex) {
      * int index = pieceIndex / 8;

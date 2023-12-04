@@ -29,9 +29,10 @@ public class MsgRequest extends Message {
         // available
         if (!requestingPeer.choking && myBitfield.hasPiece(pieceIndex)) {
             // If conditions are met, send the requested piece to the requesting peer
-            byte[] piecePayload = createPiecePayload(pieceIndex, loadPiece(pieceIndex, senderID));
+            byte[] piecePayload = createPiecePayload(pieceIndex, loadPiece(pieceIndex));
+            // byte[] piecePayload = Peer.bitfield[pieceIndex];
 
-            Message.sendMessage(MessageType.PIECE, senderID, receiverID, piecePayload);
+            Message.sendMessage(MessageType.PIECE, receiverID, senderID, piecePayload);
 
             // SEND RANDOM PIECE IN HAVE MESSAGE
             // Message.sendMessage(MessageType.HAVE, receiverID, senderID, null);
