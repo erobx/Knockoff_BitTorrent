@@ -65,17 +65,17 @@ public class Peer {
         this.peerID = peerID;
     }
 
-    class DowloadComparator implements Comparator<Neighbor>{
-             
-        // Overriding compare()method of Comparator 
-                    // for descending order of cgpa
+    class DowloadComparator implements Comparator<Neighbor> {
+
+        // Overriding compare()method of Comparator
+        // for descending order of cgpa
         public int compare(Neighbor n1, Neighbor n2) {
             if (n1.dataRate < n2.dataRate)
                 return 1;
             else if (n1.dataRate > n2.dataRate)
                 return -1;
-                            return 0;
-            }
+            return 0;
+        }
     }
 
     /*
@@ -85,7 +85,7 @@ public class Peer {
     // Temporary Stuff for testing
     private void timeout() {
 
-        long TimeoutValue = 30; // 30 seconds
+        long TimeoutValue = 200; // 200 seconds
 
         System.out.println("Time: " + (System.currentTimeMillis() - lastTimeoutCheck) / 1000);
 
@@ -188,8 +188,7 @@ public class Peer {
             }
 
             // check if enough time has passed for preferedNeighbors
-            if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >=
-            updatePrefInterval) {
+            if ((System.currentTimeMillis() - lastPreferredUpdateTime) / 1000 >= updatePrefInterval) {
                 updatePreferred();
                 lastPreferredUpdateTime = System.currentTimeMillis();
             }
@@ -197,10 +196,10 @@ public class Peer {
             // // check if enough time has passed for optimistically unchoked
             // if ((System.currentTimeMillis() - lastOpUnchokeUpdateTime) / 1000 >=
             // opUnchokeInterval*1000) {
-            //     optimisticUnchoke();
-            //     lastOpUnchokeUpdateTime = System.currentTimeMillis();
+            // optimisticUnchoke();
+            // lastOpUnchokeUpdateTime = System.currentTimeMillis();
             // }
-            
+
             updatePeersDone();
         }
     }
@@ -376,31 +375,31 @@ public class Peer {
                 // Reset dataRate for each peer
                 peer.dataRate = 0;
             }
-                // Unchoke the top number of prefered interested peers
-                for (int i = 0; i < numPrefNeighbors; i++) {
-                    Neighbor preferredPeer = interestedPeersQueue.poll();
-                    if (preferredPeer != null) {
-                        prefPeers.add(preferredPeer.peerID);
-                        if (!preferredPeer.isChoking()){
-                            unchoke(preferredPeer.peerID);
-                        }
-                    } else {
-                        System.err.println("Error! Trying to add an unconnected peer to preferred peers");
+            // Unchoke the top number of prefered interested peers
+            for (int i = 0; i < numPrefNeighbors; i++) {
+                Neighbor preferredPeer = interestedPeersQueue.poll();
+                if (preferredPeer != null) {
+                    prefPeers.add(preferredPeer.peerID);
+                    if (!preferredPeer.isChoking()) {
+                        unchoke(preferredPeer.peerID);
                     }
-                }
-
-                // Choke all remaining interested peers
-                while (interestedPeersQueue.peek() != null) {
-                    Neighbor chokedPeer = interestedPeersQueue.poll();
-                    if (chokedPeer != null) {
-                        choke(chokedPeer.peerID);
-                    } else {
-                        System.err.println("Error! Trying to choke an unconnected peer");
-                    }
+                } else {
+                    System.err.println("Error! Trying to add an unconnected peer to preferred peers");
                 }
             }
 
-        } else {
+            // Choke all remaining interested peers
+            while (interestedPeersQueue.peek() != null) {
+                Neighbor chokedPeer = interestedPeersQueue.poll();
+                if (chokedPeer != null) {
+                    choke(chokedPeer.peerID);
+                } else {
+                    System.err.println("Error! Trying to choke an unconnected peer");
+                }
+            }
+        }
+
+        else {
             // The peer has downloaded the whole file so unchoke and choke randomly since
             // they don't receive pieces
             Random rand = new Random();
