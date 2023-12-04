@@ -31,7 +31,7 @@ public class MsgPiece extends Message {
         System.out.println(logMessage);
 
         // Write the received piece to the file
-        writePieceToFile(piece);
+        // writePieceToFile(piece);
 
         int totalNumpiece = 0; // TODO set this somehow
 
@@ -46,10 +46,10 @@ public class MsgPiece extends Message {
         myBitfield.setPiece(pieceIndex, true);
 
         // Update the interest status of peers and send HAVE messages
-        updatePeersInterest();
+        // updatePeersInterest();
 
         // Handle Part 2 of the protocol
-        handlePartTwo(sendingPeer, myBitfield);
+        // handlePartTwo(sendingPeer, myBitfield);
     }
 
     // Method to update the data rate of a peer

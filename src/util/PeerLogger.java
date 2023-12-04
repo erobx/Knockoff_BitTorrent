@@ -131,7 +131,7 @@ public class PeerLogger {
             neighbors = " ";
         }
 
-        String neighbors = " ";
+        neighbors = " ";
         if (preferredNeighbors.size() != 0) {
             neighbors = neighborsJoiner.toString();
         }

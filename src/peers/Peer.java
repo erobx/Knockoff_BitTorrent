@@ -168,6 +168,10 @@ public class Peer {
 
                 try {
                     Message m = Message.getMessage(messageBytes, senderID, peerID);
+                    if (m.getPayload() != null) {
+                        System.out.println("Type value: " + m.getType());
+                        System.out.println("Payload value: " + Message.byteArrayToInt(m.getPayload()));
+                    }
                     m.handle(); // will handle based on what message it is
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
@@ -419,6 +423,7 @@ public class Peer {
                     if (peer.peerInterested && numCurrentPrefered < numPrefNeighbors) {
                         prefPeers.add(peer.peerID);
                         unchoke(peer.peerID);
+                        numCurrentPrefered++;
                     } else {
                         // Choke all remaining peers
                         choke(peer.peerID);

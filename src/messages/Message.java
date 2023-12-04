@@ -196,7 +196,7 @@ public abstract class Message implements Serializable {
                         receiverID);
             // Request - index payload
             case REQUEST ->
-                message = new MsgHave(length, (byte) MessageType.REQUEST.getValue(), payload, senderID, receiverID);
+                message = new MsgRequest(length, (byte) MessageType.REQUEST.getValue(), payload, senderID, receiverID);
             // Piece - index + piece payload
             // TODO PIECE message could be setup wrong
             case PIECE ->
@@ -296,5 +296,9 @@ public abstract class Message implements Serializable {
         scan.close();
 
         return piece;
+    }
+
+    public byte[] getPayload() {
+        return this.payload;
     }
 }
