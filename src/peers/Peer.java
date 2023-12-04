@@ -430,7 +430,7 @@ public class Peer {
                 }
             }
         }
-        PeerLogger.PrefNeighborMessage(this.peerID, prefPeers);
+        PeerLogger.PrefNeighborMessage(peerID, prefPeers);
     }
 
     public static void knuthShuffle(Integer[] array) {

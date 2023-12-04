@@ -126,6 +126,10 @@ public class PeerLogger {
         Logger logger = Logger.getLogger("log_peer_" + pid1);
         StringJoiner neighborsJoiner = new StringJoiner(", ");
         preferredNeighbors.forEach(neighbor -> neighborsJoiner.add(String.valueOf(neighbor)));
+        String neighbors = neighborsJoiner.toString();
+        if (preferredNeighbors.size() == 0) {
+            neighbors = " ";
+        }
 
         String neighbors = " ";
         if (preferredNeighbors.size() != 0) {
@@ -140,7 +144,7 @@ public class PeerLogger {
     }
 
     public static void UnchokeMessage(int pid, int pidNeighbor) {
-        Logger logger = Logger.getLogger("log_peer_" + pid);
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pid);
         logger.log(Level.INFO, String.format("Peer %s is unchoked by %s", pid, pidNeighbor));
     }
 
@@ -153,6 +157,13 @@ public class PeerLogger {
         Logger logger = Logger.getLogger("log_peer_" + pidReceived);
         logger.log(Level.INFO,
                 String.format("Peer %s received the 'have' message from %s for the piece %d", pidReceived, pidSend,
+                        pieceIndex));
+    }
+
+    public static void ReceiveRequestMessage(int pidReceived, int pidSend, int pieceIndex) {
+        Logger logger = LogManager.getLogManager().getLogger("log_peer_" + pidReceived);
+        logger.log(Level.INFO,
+                String.format("Peer %s received the 'request' message from %s for the piece %d", pidReceived, pidSend,
                         pieceIndex));
     }
 

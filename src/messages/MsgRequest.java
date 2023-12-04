@@ -5,6 +5,7 @@ import java.io.IOException;
 import peers.Neighbor;
 import peers.Peer;
 import util.Bitfield;
+import util.PeerLogger;
 
 public class MsgRequest extends Message {
 
@@ -15,7 +16,6 @@ public class MsgRequest extends Message {
         this.pieceIndex = byteArrayToInt(payload);
     }
 
-    // TODO Fully implement
     @Override
     public void handle() throws IOException {
         System.out.println("REQUEST message received from " + senderID + " at " + receiverID);
@@ -26,13 +26,15 @@ public class MsgRequest extends Message {
 
         // Check if the requesting peer is not choking and the requested piece is
         // available
-        if (!requestingPeer.choking && myBitfield.hasPiece(pieceIndex)) {
+        if (requestingPeer.choking && !myBitfield.hasPiece(pieceIndex)) {
             // If conditions are met, send the requested piece to the requesting peer
-
             byte[] piecePayload = createPiecePayload(pieceIndex, loadPiece(pieceIndex, senderID));
 
             Message.sendMessage(MessageType.PIECE, receiverID, senderID, piecePayload);
+
+            // SEND RANDOM PIECE IN HAVE MESSAGE
         }
+        PeerLogger.ReceiveRequestMessage(receiverID, senderID, pieceIndex);
     }
 
 }
