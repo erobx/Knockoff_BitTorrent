@@ -373,36 +373,34 @@ public class Peer {
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<Neighbor>(new DowloadComparator());
 
             // Iterate over all peers to identify interested ones
-            if (!peers.isEmpty()) {
-                for (Neighbor peer : peers.values()) {
+            for (Neighbor peer : peers.values()) {
                 if (peer.peerInterested) {
                     interestedPeersQueue.add(peer);
-                    System.out.println("ADDED INTERESTED PEER");
                 }
                 // Reset dataRate for each peer
                 peer.dataRate = 0;
             }
-                // Unchoke the top number of prefered interested peers
-                for (int i = 0; i < numPrefNeighbors; i++) {
-                    Neighbor preferredPeer = interestedPeersQueue.poll();
-                    if (preferredPeer != null) {
-                        prefPeers.add(preferredPeer.peerID);
-                        if (!preferredPeer.isChoking()){
-                            unchoke(preferredPeer.peerID);
-                        }
-                    } else {
-                        System.err.println("Error! Trying to add an unconnected peer to preferred peers");
-                    }
-                }
 
-                // Choke all remaining interested peers
-                while (interestedPeersQueue.peek() != null) {
-                    Neighbor chokedPeer = interestedPeersQueue.poll();
-                    if (chokedPeer != null) {
-                        choke(chokedPeer.peerID);
-                    } else {
-                        System.err.println("Error! Trying to choke an unconnected peer");
+            // Unchoke the top number of prefered interested peers
+            for (int i = 0; i < numPrefNeighbors; i++) {
+                Neighbor preferredPeer = interestedPeersQueue.poll();
+                if (preferredPeer != null) {
+                    prefPeers.add(preferredPeer.peerID);
+                    if (!preferredPeer.isChoking()){
+                        unchoke(preferredPeer.peerID);
                     }
+                } else {
+                    System.err.println("Error! Trying to add an unconnected peer to preferred peers");
+                }
+            }
+
+            // Choke all remaining interested peers
+            while (interestedPeersQueue.peek() != null) {
+                Neighbor chokedPeer = interestedPeersQueue.poll();
+                if (chokedPeer != null) {
+                    choke(chokedPeer.peerID);
+                } else {
+                    System.err.println("Error! Trying to choke an unconnected peer");
                 }
             }
 
