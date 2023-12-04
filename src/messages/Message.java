@@ -148,7 +148,8 @@ public abstract class Message implements Serializable {
         String input = reader.readLine();
         ByteBuffer buffer = ByteBuffer.wrap(input.getBytes());
 
-        // System.out.println("MESSAGE INPUT: " + input + " of length " + input.length());
+        // System.out.println("MESSAGE INPUT: " + input + " of length " +
+        // input.length());
 
         // Read the int (length)
         // int length = byteArrayToInt(input.substring(0, 4).getBytes());
@@ -173,38 +174,50 @@ public abstract class Message implements Serializable {
         // int index = byteArrayToInt(payload);
         Message message = null;
 
-        switch (MessageType.getTypeByInt((type))) {
+        MessageType messageType = MessageType.getTypeByInt(type);
+
+        switch (messageType) {
             // Choke - no payload
-            case CHOKE ->
+            case CHOKE:
                 message = new MsgChoke(length, (byte) MessageType.CHOKE.getValue(), null, senderID, receiverID);
+                break;
             // Unchoke - no payload
-            case UNCHOKE ->
+            case UNCHOKE:
                 message = new MsgUnchoke(length, (byte) MessageType.UNCHOKE.getValue(), null, senderID, receiverID);
+                break;
             // Interested - no payload
-            case INTERESTED ->
+            case INTERESTED:
                 message = new MsgInt(length, (byte) MessageType.INTERESTED.getValue(), null, senderID, receiverID);
+                break;
             // Not interested - no payload
-            case NOT_INTERESTED ->
+            case NOT_INTERESTED:
                 message = new MsgNotInt(length, (byte) MessageType.NOT_INTERESTED.getValue(), null, senderID,
                         receiverID);
+                break;
             // Have - index payload
-            case HAVE ->
+            case HAVE:
                 message = new MsgHave(length, (byte) MessageType.HAVE.getValue(), payload, senderID, receiverID);
+                break;
             // Bitfield - bitfield payload
-            case BITFIELD ->
+            case BITFIELD:
                 message = new MsgBitfield(length, (byte) MessageType.BITFIELD.getValue(), payload, senderID,
                         receiverID);
+                break;
             // Request - index payload
-            case REQUEST ->
+            case REQUEST:
                 message = new MsgRequest(length, (byte) MessageType.REQUEST.getValue(), payload, senderID, receiverID);
+                break;
             // Piece - index + piece payload
-            // TODO PIECE message could be setup wrong
-            case PIECE ->
+            // TODO PIECE message could be set up wrong
+            case PIECE:
                 message = new MsgPiece(length, (byte) MessageType.PIECE.getValue(), payload, senderID, receiverID);
+                break;
             // Add more cases as needed
-            default ->
-                PeerLogger.Error(receiverID, "MESSAGE NOT DESIERIALZED CORRECTLY");
+            default:
+                PeerLogger.Error(receiverID, "MESSAGE NOT DESERIALIZED CORRECTLY");
+                break;
         }
+
         System.out.println("MESSAGE (" + MessageType.getTypeByInt(message.getType()) + ") is about to be handled");
         return message;
     }
@@ -228,40 +241,37 @@ public abstract class Message implements Serializable {
         // TODO check if parameters are correct
         switch (type) {
             // Choke - no payload
-            case CHOKE ->
-                msg = new MsgChoke(0, (byte) type.getValue(), null, receiverID,
-                        senderID);
+            case CHOKE:
+                msg = new MsgChoke(0, (byte) type.getValue(), null, receiverID, senderID);
+                break;
             // Unchoke - no payload
-            case UNCHOKE ->
-                msg = new MsgUnchoke(0, (byte) type.getValue(), null, receiverID,
-                        senderID);
-
+            case UNCHOKE:
+                msg = new MsgUnchoke(0, (byte) type.getValue(), null, receiverID, senderID);
+                break;
             // Interested - no payload
-            case INTERESTED ->
-                msg = new MsgInt(0, (byte) type.getValue(), null, receiverID,
-                        senderID);
+            case INTERESTED:
+                msg = new MsgInt(0, (byte) type.getValue(), null, receiverID, senderID);
+                break;
             // Not interested - no payload
-            case NOT_INTERESTED ->
-                msg = new MsgNotInt(0, (byte) type.getValue(), null, receiverID,
-                        senderID);
-
+            case NOT_INTERESTED:
+                msg = new MsgNotInt(0, (byte) type.getValue(), null, receiverID, senderID);
+                break;
             // Have - index payload TODO adjust payload
-            case HAVE ->
-                msg = new MsgHave(0, (byte) type.getValue(), payload, receiverID,
-                        senderID);
+            case HAVE:
+                msg = new MsgHave(0, (byte) type.getValue(), payload, receiverID, senderID);
+                break;
             // Bitfield - bitfield payload
-            case BITFIELD ->
-                msg = new MsgBitfield(length, (byte) type.getValue(), payload, receiverID,
-                        senderID);
-
+            case BITFIELD:
+                msg = new MsgBitfield(length, (byte) type.getValue(), payload, receiverID, senderID);
+                break;
             // Request - index payload TODO adjust payload and length
-            case REQUEST ->
-                msg = new MsgRequest(length, (byte) type.getValue(), payload, receiverID,
-                        senderID);
+            case REQUEST:
+                msg = new MsgRequest(length, (byte) type.getValue(), payload, receiverID, senderID);
+                break;
             // Piece - index + piece payload TODO adjust payload and length
-            case PIECE ->
-                msg = new MsgPiece(length, (byte) type.getValue(), payload, receiverID,
-                        senderID);
+            case PIECE:
+                msg = new MsgPiece(length, (byte) type.getValue(), payload, receiverID, senderID);
+                break;
         }
 
         // send msg if appropriate type is inputted
@@ -282,33 +292,35 @@ public abstract class Message implements Serializable {
         String fileLocation = "../src/" + receiverID + "/thefile";
         // Scanner scan;
         // try {
-        //     scan = new Scanner(new File(fileLocation));
+        // scan = new Scanner(new File(fileLocation));
         // } catch (FileNotFoundException e) {
-        //     throw new RuntimeException("Cannot find file: " + fileLocation, e);
+        // throw new RuntimeException("Cannot find file: " + fileLocation, e);
         // }
         // StringBuilder pieceBuffer = new StringBuilder();
         // while (scan.hasNext()) {
-        //     pieceBuffer.append(scan.next());
+        // pieceBuffer.append(scan.next());
         // }
         // byte[] piece = pieceBuffer.toString().getBytes();
 
         // scan.close();
 
         byte[] piece = new byte[Peer.pieceSize];
-        // try (RandomAccessFile randomAccessFile = new RandomAccessFile(fileLocation, "r")) {
-        //     // Set the file pointer to the desired offset
+        // try (RandomAccessFile randomAccessFile = new RandomAccessFile(fileLocation,
+        // "r")) {
+        // // Set the file pointer to the desired offset
 
-        //     // Check last 
-        //     // if (pieceIndex == Peer.numPieces) {
-        //     //     piece = new byte[Peer.lastPieceSize];
-        //     //     randomAccessFile.read(piece, pieceIndex*Peer.lastPieceSize, Peer.lastPieceSize);
-        //     // } else {
-        //     //     piece = new byte[Peer.pieceSize];
-        //     //     randomAccessFile.read(piece, pieceIndex*Peer.pieceSize, Peer.pieceSize);
-        //     // }
-        //     randomAccessFile.read(piece, pieceIndex, Peer.pieceSize);
+        // // Check last
+        // // if (pieceIndex == Peer.numPieces) {
+        // // piece = new byte[Peer.lastPieceSize];
+        // // randomAccessFile.read(piece, pieceIndex*Peer.lastPieceSize,
+        // Peer.lastPieceSize);
+        // // } else {
+        // // piece = new byte[Peer.pieceSize];
+        // // randomAccessFile.read(piece, pieceIndex*Peer.pieceSize, Peer.pieceSize);
+        // // }
+        // randomAccessFile.read(piece, pieceIndex, Peer.pieceSize);
         // } catch (Exception e) {
-        //     e.printStackTrace();
+        // e.printStackTrace();
         // }
 
         return piece;
