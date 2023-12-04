@@ -204,9 +204,9 @@ public class Peer {
             //     optimisticUnchoke();
             //     lastOpUnchokeUpdateTime = System.currentTimeMillis();
             // }
+            
+            updatePeersDone();
         }
-
-        closePeers();
     }
 
     private void closePeers() {
@@ -381,7 +381,12 @@ public class Peer {
                 }
                 // Reset dataRate for each peer
                 peer.dataRate = 0;
+                }
             }
+            else {
+                System.out.println("Peers is empty");
+            }
+
                 // Unchoke the top number of prefered interested peers
                 for (int i = 0; i < numPrefNeighbors; i++) {
                     Neighbor preferredPeer = interestedPeersQueue.poll();
@@ -404,7 +409,6 @@ public class Peer {
                         System.err.println("Error! Trying to choke an unconnected peer");
                     }
                 }
-            }
 
         } else {
             // The peer has downloaded the whole file so unchoke and choke randomly since
@@ -539,5 +543,14 @@ public class Peer {
 
     public void addToMessageQueue(byte[] msg, int peerID) {
         messageQueue.add(new MessageObj(msg, peerID));
+    }
+
+    public void updatePeersDone() {
+        unfinishedPeers = numPeers;
+        for (Map.Entry<Integer, Neighbor> peer : peers.entrySet()) {
+            if (peer.getValue().bitfield.isFull()) {
+                unfinishedPeers--;
+            }
+        }
     }
 }
