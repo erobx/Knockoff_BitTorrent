@@ -61,6 +61,7 @@ class StartLocalPeers {
 
                 RemotePeerInfo pInfo = (RemotePeerInfo) myStart.peerInfoVector.elementAt(i);
                 Runtime.getRuntime().exec("java peerProcess " + pInfo.peerId);
+                Thread.sleep(2000);
                 // Thread thread = new Thread(() -> {
                 //     try {
                 //         Process process = Runtime.getRuntime().exec("java peerProcess " + pInfo.peerId);

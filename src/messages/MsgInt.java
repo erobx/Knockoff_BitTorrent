@@ -27,13 +27,8 @@ public class MsgInt extends Message {
         Peer.peers.put(senderID, newNeighbor);
         // Peer.peers.get(senderID).setPeerInterested(true);
         // sendingPeer.peerInterested = true;
-        // setPeerChoking(sendingPeer, true);
 
-        // requestRandomPiece(sendingPeer.bitfield);
-    }
-
-    private void setPeerChoking(Neighbor peer, boolean isChoking) {
-        peer.peerChoking = isChoking;
+        // requestRandomPiece(newNeighbor.bitfield);
     }
 
     private void requestRandomPiece(Bitfield sendingBitfield) throws IOException {
@@ -58,7 +53,7 @@ public class MsgInt extends Message {
     }
 
     private void sendMessageRequest(int pieceIndex) throws IOException {
-        Message.sendMessage(MessageType.REQUEST, receiverID, senderID, intToByteArray(pieceIndex));
+        Message.sendMessage(MessageType.HAVE, receiverID, senderID, intToByteArray(pieceIndex));
     }
 
 }

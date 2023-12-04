@@ -168,10 +168,6 @@ public class Peer {
 
                 try {
                     Message m = Message.getMessage(messageBytes, senderID, peerID);
-                    if (m.getPayload() != null) {
-                        System.out.println("Type value: " + m.getType());
-                        System.out.println("Payload value: " + Message.byteArrayToInt(m.getPayload()));
-                    }
                     m.handle(); // will handle based on what message it is
                 } catch (Exception e) {
                     StackTraceElement[] stackTrace = e.getStackTrace();
@@ -373,20 +369,13 @@ public class Peer {
             PriorityQueue<Neighbor> interestedPeersQueue = new PriorityQueue<Neighbor>(new DowloadComparator());
 
             // Iterate over all peers to identify interested ones
-            if (!peers.isEmpty()) {
-                for (Neighbor peer : peers.values()) {
-                if (peer.peerInterested) {
+            for (Neighbor peer : peers.values()) {
+                if (peer.interested) {
                     interestedPeersQueue.add(peer);
-                    System.out.println("ADDED INTERESTED PEER");
                 }
                 // Reset dataRate for each peer
                 peer.dataRate = 0;
-                }
             }
-            else {
-                System.out.println("Peers is empty");
-            }
-
                 // Unchoke the top number of prefered interested peers
                 for (int i = 0; i < numPrefNeighbors; i++) {
                     Neighbor preferredPeer = interestedPeersQueue.poll();
@@ -409,6 +398,7 @@ public class Peer {
                         System.err.println("Error! Trying to choke an unconnected peer");
                     }
                 }
+            }
 
         } else {
             // The peer has downloaded the whole file so unchoke and choke randomly since
